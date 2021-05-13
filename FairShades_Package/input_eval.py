@@ -2,6 +2,8 @@ import numpy as np
 import pandas as pd
 import random
 
+#Definition of the class Wrapper
+#NEEDED INPUT: the corpus and the pre-trained Hate-Speech Classifier to get the BB predictions / predictions, i.e. the predict_proba function
 #Class for realizing *hate.predict* agnostically
 
 class Wrapper:
