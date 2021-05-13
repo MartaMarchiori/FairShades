@@ -2,6 +2,24 @@ import numpy as np
 import pandas as pd
 import random
 
+#Class for realizing *hate.predict* agnostically
+
+class Wrapper:
+  def predict(self, corpus, predict_proba):
+    output = []
+    for item in corpus:
+      output.append(predict_proba(item)) 
+    return output
+  
+  def predict_labels(self, scores):
+    labels=[]
+    for score in scores:
+      if score[0]>score[1]:
+        labels.append(0)
+      else:
+        labels.append(1)
+    return labels  
+
 '''*Inspo from summary of CheckList*
 In our case, we pass a corpus or a fraction of it (i.e. a collection of phrases). What if the sentences are too many or the users only wants to assess k phrases? 
 

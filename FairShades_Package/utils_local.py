@@ -234,7 +234,7 @@ def find_keys(a,dictionary):
   return a 
 
 # verbalize the explanation, i.e. contains (x addedd or substituted) ⇒ hate_proba goes up / down of y 
-def pre_verbalize(key,terms_orig,terms_neigh,relevant,neigh,sentence_to_explain,real_label_sentence_to_explain,correct):
+def pre_verbalize(key,terms_orig,terms_neigh,relevant,isLocal,tot=0,neigh=None,sentence_to_explain=None,real_label_sentence_to_explain=None,correct=None):
   label_change=relevant['label_change']
   diff=relevant['differences']
   differences_with_signs=relevant['differences_with_signs']
@@ -249,48 +249,32 @@ def pre_verbalize(key,terms_orig,terms_neigh,relevant,neigh,sentence_to_explain,
     if differences_with_signs[indexes[i]] < 0: # retrieve the diff from the index 
       Hate_increase=True # proba was < proba_neigh, i.e. resulting in negative diff.
     result.append([relevant[samples_key][i][0],terms_neigh[i],terms_orig[i],diff[indexes[i]],label_change[indexes[i]],Hate_increase])
-  # printing some captions 
-  tot=0
-  for item in neigh[0].values():
-    tot+=item
-  print("The record you chose to explain is: ",sentence_to_explain)
-  if real_label_sentence_to_explain == 1:
-    print("It is an hateful record")
-  else:
-    print("It is a non-hateful record")
-  if correct == False:
-    print("The original record was wrongly classified by the Black Box! :( Don't worry, our Explainer will tell you more about it")
-  else:
-    print("The original record was correctly classified by the Black Box! :) Stay tuned for more details")
-  tot=int (tot)
-  print()
-  print("-- > Total number of neighbours generated: ",tot)
-  print("-- > Number of neighbours per capacity: ", neigh[0])
-  d={}
-  for key in neigh[0]:
-    d[key]= round(100*neigh[0][key]/tot,2)
-  print("-- > Percentage of neighbours per capacity ",d)
-  print()
-  for item in result:
-    print('Counterfactual: [',item[0],']')
-    print('If <',item[1][0],'> is present, the difference in the probability w.r.t. <hateful> within the original record is of',round(item[3],2))
-    print(item[4]) 
+  if isLocal:
+    # printing some captions 
+    # tot=0
+    for item in neigh[0].values():
+      tot+=item
+    print("The record you chose to explain is: ",sentence_to_explain)
+    if real_label_sentence_to_explain == 1:
+      print("It is an hateful record")
+    else:
+      print("It is a non-hateful record")
+    if correct == False:
+      print("The original record was wrongly classified by the Black Box! :( Don't worry, our Explainer will tell you more about it")
+    else:
+      print("The original record was correctly classified by the Black Box! :) Stay tuned for more details")
+    tot=int (tot)
     print()
-  return tot,result 
-
-def local_per_global(key,terms_orig,terms_neigh,relevant,tot):
-  label_change=relevant['label_change']
-  diff=relevant['differences']
-  differences_with_signs=relevant['differences_with_signs']
-  indexes=relevant[key]
-  if key == 'indexes_relevant':
-    samples_key='influential_samples'
-  else:
-    samples_key='not_influential_samples'
-  result=[]
-  Hate_increase=False
-  for i in range(len(indexes)): # for each phrase 
-    if differences_with_signs[indexes[i]] < 0: # retrieve the diff from the index 
-      Hate_increase=True # proba was < proba_neigh, i.e. resulting in negative diff.
-    result.append([relevant[samples_key][i][0],terms_neigh[i],terms_orig[i],diff[indexes[i]],label_change[indexes[i]],Hate_increase])
+    print("-- > Total number of neighbours generated: ",tot)
+    print("-- > Number of neighbours per capacity: ", neigh[0])
+    d={}
+    for key in neigh[0]:
+      d[key]= round(100*neigh[0][key]/tot,2)
+    print("-- > Percentage of neighbours per capacity ",d)
+    print()
+    for item in result:
+      print('Counterfactual: [',item[0],']')
+      print('If <',item[1][0],'> is present, the difference in the probability w.r.t. <hateful> within the original record is of',round(item[3],2))
+      print(item[4]) 
+      print()
   return tot,result 

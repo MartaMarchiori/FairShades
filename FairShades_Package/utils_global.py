@@ -96,7 +96,7 @@ def inv_var_samples(res):
   }
   return d
 
-def build_global_inputs(corpus,samples,building_predicted_for_neigh):
+def build_global_inputs(corpus,samples,predict_proba):
   global rlc
   rlc=[]
   inputs=[]
@@ -108,7 +108,7 @@ def build_global_inputs(corpus,samples,building_predicted_for_neigh):
     rlc.append(real_label_sentence_to_explain) #for Fairness Eval.
     n=Neighbourhood()
     neigh=n.generate_neighbourhood('auto', 'auto', [corpus[id]])
-    predictions = building_predicted_for_neigh(neigh)
+    predictions = building_predicted_for_neigh(neigh,predict_proba)
     i=ClassificationInput()
     input=i.generate_input([samples['miscl_samples'][id]], samples['miscl_proba'][id], neigh[1], predictions)
     inputs.append(input)
