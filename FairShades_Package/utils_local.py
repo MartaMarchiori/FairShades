@@ -135,8 +135,8 @@ def same_leave(sample_id, neigh,dt):
       leaves_id_base = leaves_ids[sample_id]
       common_leaves = np.where(leaves_ids==leaves_id_base)
       common_leaves = np.delete(common_leaves,np.where(common_leaves[0]==sample_id))
-      print("In the neighbourhood of size "+str(len(leaves_ids))+", the sample at index "+str(sample_id)+
-            " is located in the leave id "+str(leaves_id_base)+". The records placed in the same leave are "+str(len(common_leaves))+" and are classified has Hateful with probability:")
+      print("In the neighbourhood of size "+str(len(leaves_ids))+", the original record"+#at index "+str(sample_id)+
+            " is located in the leave id "+str(leaves_id_base)+". The records placed in the same leave are "+str(len(common_leaves))+" and are classified as Hateful with probability:")
       return leaves_id_base,common_leaves
 
 def inv_samples(dt, original, neigh, BoW, sl, l_i, n=3): 
@@ -152,7 +152,7 @@ def inv_samples(dt, original, neigh, BoW, sl, l_i, n=3):
   for index in index_invariant:
     invariant_s.append(neigh[index-1])
   d = {
-        'Leaf Hate value':DTR_pred[0][0],
+        'Leaf Hate value': round(DTR_pred[0][0],3),
         #'index_invariant':index_invariant,
         'Invariant samples and probabilities (non-hate, hate)':invariant_s
   }
@@ -165,38 +165,60 @@ The ids from here are a little mixed:
 '''
 
 # working with df['hate_proba']
-def relevant_samples(original, neigh, n=3): 
+def relevant_samples(original, neigh, n): 
     proba=original[1][1]
     diff=[]
     diff_with_signs=[]
     label_change=[]
+    i_largest=[]
+    temp=[]
     influential=[]
     not_influential=[]
+    indexes_relevant=[]
+    indexes_not_relevant=[]
     for i in range(len(neigh)):
-      diff.append(abs(proba - neigh[i][1][1])) # neigh does not contain the original record
+      abs_diff=abs(proba - neigh[i][1][1])
+      diff.append(abs_diff) # neigh does not contain the original record
       diff_with_signs.append(proba - neigh[i][1][1]) # removing abs because we need to keep the information about the increase or decrease
       if (proba < 0.5 and neigh[i][1][1] < 0.5):
-        label_change.append('The label remains <non-hateful>.') 
+        label_change.append('The label remains <non-hateful>.')
+        not_influential.append(neigh[i]) 
+        indexes_not_relevant.append(i)
       elif (proba < 0.5 and neigh[i][1][1] > 0.5):
         label_change.append('The label changes from <non-hateful> to <hateful>')
+        i_largest.append(i)
+        temp.append(abs_diff)
+        #influential.append(neigh[i])
+        #indexes_relevant.append(i)
       elif (proba > 0.5 and neigh[i][1][1] > 0.5):
-        label_change.append('The label remains <hateful>.')    
+        label_change.append('The label remains <hateful>.')   
+        not_influential.append(neigh[i]) 
+        indexes_not_relevant.append(i)
       elif (proba > 0.5 and neigh[i][1][1] < 0.5):
         label_change.append('The label changes from <hateful> to <non-hateful>')  
-    i_largest=sorted(range(len(diff)), key=lambda i: diff[i], reverse=True)[:n]
-    i_smallest=sorted(range(len(diff)), key=lambda i: diff[i])[:n]
-    for index in i_largest:
+        i_largest.append(i)
+        temp.append(abs_diff)
+        #influential.append(neigh[i])
+        #indexes_relevant.append(i)
+    temp_indexes_relevant=sorted(range(len(temp)), key=lambda i: temp[i], reverse=True)[:n]
+    for index in temp_indexes_relevant:
+      indexes_relevant.append(i_largest[index])
+    for index in indexes_relevant:
       influential.append(neigh[index])
-    for index in i_smallest:
-      not_influential.append(neigh[index])
+    #i_largest=sorted(range(len(diff)), key=lambda i: diff[i], reverse=True)[:n]
+    #i_smallest=sorted(range(len(diff)), key=lambda i: diff[i])[:n]
+    #for index in i_largest:
+    #  influential.append(neigh[index])
+    #for index in i_smallest:
+    #  not_influential.append(neigh[index])
     d = {
         'differences':diff,
         'differences_with_signs':diff_with_signs,
         'label_change':label_change,
-        'indexes_relevant':i_largest,
-        'indexes_not_relevant':i_smallest,
-        'influential_samples':influential,
-        'not_influential_samples':not_influential
+        'indexes_relevant':indexes_relevant,#i_largest,
+        'indexes_not_relevant':indexes_not_relevant[:n],#i_smallest,
+        'influential_samples':influential, #controfattuali 
+        'not_influential_samples':not_influential[:n] #prototipi 
     }
     return d
 
@@ -234,7 +256,7 @@ def find_keys(a,dictionary):
   return a 
 
 # verbalize the explanation, i.e. contains (x addedd or substituted) ⇒ hate_proba goes up / down of y 
-def pre_verbalize(key,terms_orig,terms_neigh,relevant,isLocal,tot=0,neigh=None,sentence_to_explain=None,real_label_sentence_to_explain=None,correct=None):
+def pre_verbalize(key,terms_orig,terms_neigh,relevant,isLocal,tot=0,neigh=None,sentence_to_explain=None,real_label_sentence_to_explain=None,correct=None, isFirst=False):
   label_change=relevant['label_change']
   diff=relevant['differences']
   differences_with_signs=relevant['differences_with_signs']
@@ -252,29 +274,36 @@ def pre_verbalize(key,terms_orig,terms_neigh,relevant,isLocal,tot=0,neigh=None,s
   if isLocal:
     # printing some captions 
     # tot=0
-    for item in neigh[0].values():
-      tot+=item
-    print("The record you chose to explain is: ",sentence_to_explain)
-    if real_label_sentence_to_explain == 1:
-      print("It is an hateful record")
+    if isFirst:
+      for item in neigh[0].values():
+        tot+=item
+      print("The record you chose to explain is: ",sentence_to_explain)
+      if real_label_sentence_to_explain == 1:
+        print("It is an hateful record")
+      else:
+        print("It is a non-hateful record")
+      if correct == False:
+        print("The original record was wrongly classified by the Black Box! :( Don't worry, our Explainer will tell you more about it")
+      else:
+        print("The original record was correctly classified by the Black Box! :) Stay tuned for more details")
+      tot=int (tot)
+      print()
+      print("-- > Total number of neighbours generated: ",tot)
+      print("-- > Number of neighbours per capacity: ", neigh[0])
+      d={}
+      for key in neigh[0]:
+        d[key]= round(100*neigh[0][key]/tot,2)
+      print("-- > Percentage of neighbours per capacity ",d)
+      print()
+      print("------> Showing counterfactuals: ")
     else:
-      print("It is a non-hateful record")
-    if correct == False:
-      print("The original record was wrongly classified by the Black Box! :( Don't worry, our Explainer will tell you more about it")
-    else:
-      print("The original record was correctly classified by the Black Box! :) Stay tuned for more details")
-    tot=int (tot)
-    print()
-    print("-- > Total number of neighbours generated: ",tot)
-    print("-- > Number of neighbours per capacity: ", neigh[0])
-    d={}
-    for key in neigh[0]:
-      d[key]= round(100*neigh[0][key]/tot,2)
-    print("-- > Percentage of neighbours per capacity ",d)
-    print()
+      print("------> Showing prototypes: ")
     for item in result:
-      print('Counterfactual: [',item[0],']')
-      print('If <',item[1][0],'> is present, the difference in the probability w.r.t. <hateful> within the original record is of',round(item[3],2))
+      print('«',item[0],'»')
+      if not item[1]: #addition 
+        print('If <',item[2][0],'> is present, the difference in the probability w.r.t. <hateful> within the original record is of',round(item[3],2))
+      else:
+        print('If <',item[1][0],'> is present, the difference in the probability w.r.t. <hateful> within the original record is of',round(item[3],2))
       print(item[4]) 
       print()
   return tot,result 

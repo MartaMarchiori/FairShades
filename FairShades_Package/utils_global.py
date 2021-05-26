@@ -49,6 +49,7 @@ def getting_mentions(res):
   return scores_per_key,mentions
 
 def grouping_content_counterfactuals(counterfactuals,sensitive_mentions,protected_entities):
+  count_unfair=0
   group = {}
   for item in counterfactuals:
     if len(sensitive_mentions)==1:
@@ -60,7 +61,9 @@ def grouping_content_counterfactuals(counterfactuals,sensitive_mentions,protecte
         if item[2] == [sensitive_mentions[i]]:
           key=protected_entities[i][0],item[2][0]
           group=add_mentions_in_dict_(group, key, [[item[0],item[4]]])
-  return group
+  for k in group:
+    count_unfair+=len(group[k])
+  return count_unfair,group
 
 def grouping_probarange_counterfactuals(counterfactuals):
   proba = []
@@ -68,7 +71,7 @@ def grouping_probarange_counterfactuals(counterfactuals):
     proba.append(item[3])
   proba.sort()
   groups = []
-  for k, g in itertools.groupby(proba, key=lambda n: n//0.25):
+  for k, g in itertools.groupby(proba, key=lambda n: n//0.35):
     groups.append(list(g))
   group=[]
   for g in groups:
@@ -84,15 +87,18 @@ def grouping_probarange_counterfactuals(counterfactuals):
 def inv_var_samples(res):
   variant=[] 
   invariant=[]
+  count=0
   for item in res: 
+    count+=item[0]
     for neigh in item[1]:
       if neigh[4]=='The label changes from <non-hateful> to <hateful>' or neigh[4]=='The label changes from <hateful> to <non-hateful>':
         variant.append(neigh)
       else:
         invariant.append(neigh)
   d = {
+        'count':count,
         'variant':variant,
-        'invariant':invariant
+        'invariant':invariant, 
   }
   return d
 
@@ -100,17 +106,15 @@ def build_global_inputs(corpus,samples,predict_proba):
   global rlc
   rlc=[]
   inputs=[]
-  for id in range(len(corpus)):
-    correct = True
-    if corpus[id] in samples['miscl_samples']:
-      correct = False 
-    real_label_sentence_to_explain=samples['miscl_label_real'][id]
+  for item in corpus:
+    id = samples['all_samples'].index(item)
+    real_label_sentence_to_explain=samples['all_label_real'][id]
     rlc.append(real_label_sentence_to_explain) #for Fairness Eval.
     n=Neighbourhood()
-    neigh=n.generate_neighbourhood('auto', 'auto', [corpus[id]])
+    neigh=n.generate_neighbourhood('auto', 'auto', [item], True)
     predictions = building_predicted_for_neigh(neigh,predict_proba)
     i=ClassificationInput()
-    input=i.generate_input([samples['miscl_samples'][id]], samples['miscl_proba'][id], neigh[1], predictions)
+    input=i.generate_input([samples['all_samples'][id]], samples['all_proba'][id], neigh[1], predictions)
     inputs.append(input)
   return inputs
 
@@ -155,3 +159,40 @@ def build_global_df(inputs):
   y_true=df1['y_true']
   y_pred=df1['y_pred'] 
   return data,y_true,y_pred,group_membership_data,memberships,group_data,protected_features,df1
+
+def create_bias_keys():
+  # SEXISM => Misogyny, gender and sexual orientation
+  sexism_keys=['sexuality', 'gender_identity', 'women_noun', 'women_noun_plural', 'offensive_women_noun', 'offensive_women_noun_plural', 'fem_work_role', 'male_work_role']
+  sexism = []
+  for key in sexism_keys:
+    sexism+=protected.get(key)
+  # RACISM => Race, nationality and religion
+  racism_keys=['race', 'religion', 'nationality', 'country', 'city']
+  racism = []
+  for key in racism_keys:
+    racism+=protected.get(key)
+  # ABLEISM => Disability
+  ableism_keys=['dis', 'homeless', 'old']
+  ableism = []
+  for key in ableism_keys:
+    ableism+=protected.get(key)
+  return sexism,racism,ableism
+
+def grouping_global_samples(x,k):
+    for sensitive in k:
+      if re.search(r'\b%s\b' % sensitive, x):
+        return True
+
+def divide_corpus_per_bias(corpus):
+  sexism,racism,ableism=create_bias_keys()
+  sexism_samples=[]
+  racism_samples=[]
+  ableism_samples=[]
+  for item in corpus:
+    if grouping_global_samples(item,sexism):
+      sexism_samples+=[item]
+    elif grouping_global_samples(item,racism):
+      racism_samples+=[item]
+    elif grouping_global_samples(item,ableism):
+      ableism_samples+=[item]
+  return sexism_samples,racism_samples,ableism_samples

@@ -10,9 +10,9 @@ editor.tg
 
 ############## terms addressing women  
 women_noun = ['woman', 'sister', 'daughter', 'girl', 'wife', 'young lady', 'lady', 'bride',
-              'grandmother', 'mum', 'housewife', 'girlfriend', 'partner']
+              'grandmother', 'mum', 'mother', 'housewife', 'girlfriend', 'partner']
 women_noun_plural = ['women', 'sisters', 'aunts', 'daughters', 'girls', 'mothers', 'wives', 'young ladies', 'ladies',  
-                     'grandmothers', 'mums', 'housewives', 'girlfriends', 'partners'] 
+                     'grandmothers', 'mums', 'mothers', 'housewives', 'girlfriends', 'partners'] 
 
 ############## offensive 
 offensive_women_noun = ['slut', 'bitch', 'whore', 'cunt', 'spinster', 'ditsy', 'hussy', 'frigid', 

@@ -100,6 +100,9 @@ class Evaluation:
         wellcl_proba.append(self.proba[item])
         wellcl_label_real.append(self.real[item])
     samples_dict = {
+        'all_samples': self.failed_samples(eval)+self.correct_samples(eval),
+        'all_proba': miscl_proba+wellcl_proba,
+        'all_label_real': miscl_label_real+wellcl_label_real,
         'miscl_samples': self.failed_samples(eval), 
         'wellcl_samples': self.correct_samples(eval),
         'miscl_proba': miscl_proba, 

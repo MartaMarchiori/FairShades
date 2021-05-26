@@ -63,31 +63,36 @@ def get_groups_mod(text):
 # > Fat - Forensics 
 def print_fairness(metric_name, metric_matrix, protected_feature, bin_names):
     """Prints out which sub-populations violate a group fairness metric."""
-    print('The *{}* group-based fairness metric for *{}* feature split '
-          'are:'.format(metric_name, protected_feature))
+    #print('The *{}* group-based fairness metric for *{}* feature split '
+    #      'are:'.format(metric_name, protected_feature))
     for grouping_i, grouping_name_i in enumerate(bin_names):
         j_offset = grouping_i + 1
         for grouping_j, grouping_name_j in enumerate(bin_names[j_offset:]):
             grouping_j += j_offset
-            is_not = ' >not<' if metric_matrix[grouping_i, grouping_j] else ''
-
-            print('    * The fairness metric is{} satisfied for "{}" and "{}" '
-                  'sub-populations.'.format(is_not, grouping_name_i,
-                                            grouping_name_j))
+            #is_not = ' >not<' if metric_matrix[grouping_i, grouping_j] else ''
+            if metric_matrix[grouping_i, grouping_j]:
+              print('The *{}* group-based fairness metric for *{}* feature split '
+                    'are:'.format(metric_name, protected_feature))
+              is_not = ' >not<'
+              print('    * The fairness metric is{} satisfied for "{}" and "{}" '
+                    'sub-populations.'.format(is_not, grouping_name_i,
+                                              grouping_name_j))
+              print('-------')
+              #print()
 
 # 1 
 def textual_metrics(df,y_true,y_pred):
   grouped_metric = MetricFrame(skm.recall_score,
                               y_true, y_pred,
                               sensitive_features=df['group_membership_data'])
-  print("Overall recall = ", grouped_metric.overall)
-  print("Recall by groups = ", grouped_metric.by_group.to_dict())
-  print()
-  print("Min recall over groups = ", grouped_metric.group_min())
-  print("Max recall over groups = ", grouped_metric.group_max())
-  print("Difference in recall = ", grouped_metric.difference(method='between_groups'))
-  print("Ratio in recall = ", grouped_metric.ratio(method='between_groups'))
-  print()
+  #print("Overall recall = ", grouped_metric.overall)
+  #print("Recall by groups = ", grouped_metric.by_group.to_dict())
+  #print()
+  #print("Min recall over groups = ", grouped_metric.group_min())
+  #print("Max recall over groups = ", grouped_metric.group_max())
+  #print("Difference in recall = ", grouped_metric.difference(method='between_groups'))
+  #print("Ratio in recall = ", grouped_metric.ratio(method='between_groups'))
+  #print()
   multi_metric = MetricFrame({'Precision':skm.precision_score, 'Recall':skm.recall_score},
                               y_true, y_pred,
                               sensitive_features=df['group_membership_data'], 
@@ -118,13 +123,9 @@ def Fairness_metrics(df,y_true,y_pred):
   equal_accuracy_matrix = fatf_mfm.equal_accuracy(confusion_matrix_per_bin)
   print_fairness('Equal Accuracy', equal_accuracy_matrix, protected_feature, bin_names)
   print()
-  print('-------')
-  print()
   # Get the Equal Opportunity binary matrix
   equal_opportunity_matrix = fatf_mfm.equal_opportunity(confusion_matrix_per_bin)
   print_fairness('Equal Opportunity', equal_opportunity_matrix, protected_feature, bin_names)
-  print()
-  print('-------')
   print()
   # Get the Demographic Parity binary matrix
   demographic_parity_matrix = fatf_mfm.demographic_parity(confusion_matrix_per_bin)
@@ -149,9 +150,8 @@ def plots_metrics(df,y_true,y_pred, path):
   plt.savefig(path+'/all_metrics.png', transparent=True)
 
 # 4
-# The F-beta score is the weighted harmonic mean of precision and recall, reaching its optimal value at 1 and its worst value at 0.
-# The beta parameter determines the weight of recall in the combined score. beta < 1 lends more weight to precision, while beta > 1 favors recall (beta -> 0 considers only precision, beta -> +inf only recall).
 def selection_rate_fbeta(df,y_true,y_pred):
+  print()
   print('Overall -->')
   print("Selection Rate:", selection_rate(y_true, y_pred))
   print("Fbeta:", skm.fbeta_score(y_true, y_pred, beta=0.6))

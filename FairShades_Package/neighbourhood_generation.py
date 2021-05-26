@@ -22,15 +22,16 @@ from lexicons_editor import *
 '''
 
 class Neighbourhood(object):
-  def generate_neighbourhood(self, capacity, test, sample):
+  def generate_neighbourhood(self, capacity, test, sample, isGlobal=False):
+    self.capacity = capacity
     self.test = test
     self.sample = sample
-    self.capacity = capacity
+    self.isGlobal = isGlobal
     method_name=capacity
     method=getattr(self,method_name,lambda :'Invalid')
     return method() 
   def fairness(self): 
-    return self.empty(test_fairness(self.sample, self.test))
+    return self.empty(test_fairness(self.sample, self.test, self.isGlobal))
   def vocabulary(self):
     return self.empty(test_vocabulary(self.sample, self.test)) 
   def robustness(self):
@@ -55,7 +56,7 @@ class Neighbourhood(object):
     n_ner=0
     n_tax=0
     for item in self.sample:
-      f=test_fairness([item], self.test)
+      f=test_fairness([item], self.test, self.isGlobal)
       ret+=f[1]
       n_fair+=np.array(list(f[0].values())).flatten().sum()
       v=test_vocabulary([item], self.test)
@@ -76,7 +77,8 @@ class Neighbourhood(object):
         'robustness':n_rob,
         'ner':n_ner,
         'taxonomy':n_tax }
-    print("Total number of neighbours generated: ",len(ret))
+    if self.isGlobal==False:
+      print("Total number of neighbours generated: ",len(ret))
     return neigh_type,ret
 
 # for wrong parameters combination
@@ -101,6 +103,10 @@ def add_values_in_dict(sample_dict, key, list_of_values):
 
 #### I) Fairness/Biases 
 
+nationalities=[]
+for item in editor.template('{nationality}').data:
+  nationalities.append(item+'s') 
+
 # from https://lgbta.wikia.org/wiki/Category:Sexuality, https://lgbta.wikia.org/wiki/Category:Gender
 protected = { #'sexual': editor.template('{sexual_adj}').data,
     'sexuality': ['gay', 'lesbian', 'asexual', 'ace', 'bisexual', 'bi', 'homosexual', 'straight', 'cishet', 'heterosexual', 'pansexual', 'pan',
@@ -109,6 +115,7 @@ protected = { #'sexual': editor.template('{sexual_adj}').data,
     'race': ['black','hispanic', 'white', 'asian', 'european', 'latino', 'middle eastern', 'african', 'african american', 'american'],
     'religion': editor.template('{religion_adj}').data,
     'nationality': editor.template('{nationality}').data, 
+    'nationalities': nationalities, 
     'country': editor.template('{country}').data,
     'city': editor.template('{city}').data,
     'male': editor.template('{male}').data,
@@ -166,7 +173,7 @@ def change_stereotyped_work_roles(x, meta=False, *args, **kwargs):
     else:
         return ret
 
-def test_fairness(samples, test):
+def test_fairness(samples, test, isGlobal):
   global sensitive
   neigh_type={}
   ret = []
@@ -188,7 +195,8 @@ def test_fairness(samples, test):
       for i in range(n):
         found = search_for_protected(samples[i].lower())
         if len(found)!=0:
-          print('This is a list of protected entities present in your phrase: ',found)
+          if isGlobal==False:
+            print('This is a list of protected entities present in your phrase: ',found)
           for identity in found:
             if identity not in neigh_type:
               neigh_type[identity]=[0] * n 
@@ -257,9 +265,9 @@ import string
 
 def random_string(n):
     return ''.join(np.random.choice([x for x in string.ascii_letters + string.digits], n))
-def random_url(n=6):
+def random_url(n=3):
     return 'https://t.co/%s' % random_string(n)
-def random_handle(n=6):
+def random_handle(n=3):
     return '@%s' % random_string(n)
 
 def add_irrelevant(sentence):
@@ -272,7 +280,7 @@ def add_irrelevant(sentence):
 
 def add_emojis(sentence):
   perturb=[]
-  for i in range(6):
+  for i in range(10):
     perturb.append(sentence+' '+random.sample(neutral_emojis,1)[0])
   return perturb
 
@@ -302,7 +310,7 @@ def test_robustness(samples, test):
     d = {
       "irrelevant": Perturb.perturb([item], add_irrelevant, keep_original=False),
       "punctuation": Perturb.perturb(list(nlp.pipe([item])), Perturb.punctuation, keep_original=False),
-      "contraction": Perturb.perturb([item], Perturb.contractions, keep_original=False), # ALSO IN TEXTATTACK
+      "contraction": Perturb.perturb([item], Perturb.contractions, keep_original=False), 
       "typos": Perturb.perturb([item], Perturb.add_typos, keep_original=False), 
       "emojis": Perturb.perturb([item], add_emojis, keep_original=False), 
       "hashtags": Perturb.perturb([item], add_hashtags, keep_original=False)
