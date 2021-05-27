@@ -212,7 +212,7 @@ class GlobalExplanation(object):
     print()
     print("The records in the dataset are: ",len_dataset)
     print("For each record, the neighbourhoods generated are: ",n_dimensions)
-    print("The records in the dataset that contain mentions to protected identities are: ",count)
+    print("The records in the dataset that contain mentions to protected identities which cause discrimination are: ",count)
     if fair == False:
       for i in range(len(protected_entities)):
         print()
@@ -238,7 +238,7 @@ class GlobalExplanation(object):
       prot_words=[]
       for item in cf['invariant']:
         prot_words.append(item[1])
-      print(prot_words)
+      print(set(np.array(prot_words).flatten()))
 
 
   def global_persona(self, persona_type, get, path, data,y_true,y_pred,group_membership_data,memberships,group_data,protected_features,df1): #default type: Data Scientist 

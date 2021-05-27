@@ -108,3 +108,36 @@ editor.add_lexicon('neutral_adj', neutral_adj, overwrite=True)
 editor.add_lexicon('intens_adj', intens_adj, overwrite=True)
 editor.add_lexicon('intens_verb', intens_verb, overwrite=True)
 editor.add_lexicon('reducer_adj', reducer_adj, overwrite=True)
+
+
+nationalities=[]
+for item in editor.template('{nationality}').data:
+  nationalities.append(item+'s') 
+
+# from https://lgbta.wikia.org/wiki/Category:Sexuality, https://lgbta.wikia.org/wiki/Category:Gender
+protected = { #'sexual': editor.template('{sexual_adj}').data,
+    'sexuality': ['gay', 'lesbian', 'asexual', 'ace', 'bisexual', 'bi', 'homosexual', 'straight', 'cishet', 'heterosexual', 'pansexual', 'pan',
+                  'demisexual', 'polysexual', 'bicurious', 'pancurious', 'polyamorous', 'aromantic', 'aro', 'biromantic', 'panromantic'], 
+    'gender_identity': ['queer', 'trans', 'transgender', 'transsexual', 'cis', 'cisgender', 'cissexual', 'nonbinary', 'non-binary', 'enby', 'NB', 'genderqueer', 'genderfluid', 'genderflux', 'agender', 'bigender'],
+    'race': ['black','hispanic', 'white', 'asian', 'european', 'latino', 'middle eastern', 'african', 'african american', 'american'],
+    'religion': editor.template('{religion_adj}').data,
+    'nationality': editor.template('{nationality}').data, 
+    'nationalities': nationalities, 
+    'country': editor.template('{country}').data,
+    'city': editor.template('{city}').data,
+    'male': editor.template('{male}').data,
+    'female': editor.template('{female}').data,
+    'last_name': editor.template('{last_name}').data,  
+    'women_noun': editor.template('{women_noun}').data,
+    'women_noun_plural': editor.template('{women_noun_plural}').data,
+    'offensive_women_noun': editor.template('{offensive_women_noun}').data,
+    'offensive_women_noun_plural': editor.template('{offensive_women_noun_plural}').data,
+    'offensive_generic': editor.template('{offensive_generic}').data,
+    'work_role': editor.template('{work_role}').data,
+    'fem_work_role': editor.template('{fem_work_role}').data,
+    'male_work_role': editor.template('{male_work_role}').data,
+    'dis': editor.template('{dis}').data,
+    'homeless': editor.template('{homeless}').data,
+    'old': editor.template('{old}').data
+}
+

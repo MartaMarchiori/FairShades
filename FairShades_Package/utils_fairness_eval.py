@@ -108,9 +108,9 @@ def textual_metrics(df,y_true,y_pred):
 
 # 2
 def Fairness_metrics(df,y_true,y_pred):
-  dataset = np.array(df[['text','memberships']].to_records(index=False), dtype=[('text', '<U113'), ('memberships', '<U113')])
+  dataset = np.array(df[['text','group_membership_data']].to_records(index=False), dtype=[('text', '<U113'), ('group_membership_data', '<U113')])
   # Select a protected feature
-  protected_feature = 'memberships'
+  protected_feature = 'group_membership_data'#'memberships'
   # Get a confusion matrix for all sub-groups according to the split feature
   confusion_matrix_per_bin, bin_names = fatf_mt.confusion_matrix_per_subgroup(
       dataset, 
