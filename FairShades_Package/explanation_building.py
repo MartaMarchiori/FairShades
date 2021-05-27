@@ -295,10 +295,12 @@ class GlobalExplanation(object):
   def grouping_counterfactuals(self):
     c,grouping_unfair = grouping_content_counterfactuals(self.cf['variant'],sensitive_mentions,protected_entities)
     grouping_unfair_proba = grouping_probarange_counterfactuals(self.cf['variant'])
-    print("Grouping unfair counterfactuals w.r.t. terms: (category, term) -> phrases")
-    for key,value in grouping_unfair.items():
-	    print(key, '->', value)
-    print()
-    print("Grouping unfair counterfactuals w.r.t. prediction range --> range: phrases")
-    for item in grouping_unfair_proba:
-      print(item)
+    if grouping_unfair:
+      print("Grouping unfair counterfactuals w.r.t. terms: (category, term) -> phrases")
+    if grouping_unfair_proba:
+      for key,value in grouping_unfair.items():
+        print(key, '->', value)
+      print()
+      print("Grouping unfair counterfactuals w.r.t. prediction range --> range: phrases")
+      for item in grouping_unfair_proba:
+        print(item)
