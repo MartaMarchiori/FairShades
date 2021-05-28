@@ -162,7 +162,7 @@ def build_global_df(inputs):
 
 def create_bias_keys():
   # SEXISM => Misogyny, gender and sexual orientation
-  sexism_keys=['sexuality', 'gender_identity', 'women_noun', 'women_noun_plural', 'offensive_women_noun', 'offensive_women_noun_plural', 'fem_work_role', 'male_work_role']
+  sexism_keys=['sexuality', 'gender_identity', 'women_noun', 'women_noun_plural', 'offensive_women_noun', 'offensive_women_noun_plural']#, 'fem_work_role', 'male_work_role']
   sexism = []
   for key in sexism_keys:
     sexism+=protected.get(key)
