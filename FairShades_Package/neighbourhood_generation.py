@@ -240,7 +240,7 @@ def random_handle(n=3):
     return '@%s' % random_string(n)
 
 def add_irrelevant(sentence):
-    urls_and_handles = [random_url(n=3) for _ in range(5)] + [random_handle() for _ in range(5)]
+    urls_and_handles = [random_url(n=3) for _ in range(3)] + [random_handle() for _ in range(3)]
     irrelevant_before = ['@miss '] + urls_and_handles
     irrelevant_after = urls_and_handles 
     rets = ['%s %s' % (x, sentence) for x in irrelevant_before ]

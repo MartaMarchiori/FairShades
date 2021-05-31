@@ -234,11 +234,20 @@ class GlobalExplanation(object):
       res.append(l_expl)
     cf=inv_var_samples(res)
     if cf['invariant']:
-      print('"Prototype" words that don\'t cause a flip in the label predicted: ')
+      prot_words_sensitive=[]
       prot_words=[]
       for item in cf['invariant']:
-        prot_words.append(item[1])
-      print(prot_words)
+        if item in protected_dictionaries_values:
+          prot_words_sensitive.append(item[1])
+        else:
+          prot_words.append(item[1])
+      if prot_words_sensitive:
+        print('Sensitive "prototype" words that don\'t cause a flip in the label predicted: ')
+        print(prot_words_sensitive)
+      if prot_words:
+        print('Other "prototype" words that don\'t cause a flip in the label predicted: ')
+        print(prot_words)
+    
 
   def global_persona(self, persona_type, get, path, data,y_true,y_pred,group_membership_data,memberships,group_data,protected_features,df1): #default type: Data Scientist 
     self.persona_type = persona_type

@@ -111,7 +111,7 @@ editor.add_lexicon('reducer_adj', reducer_adj, overwrite=True)
 
 
 nationalities=[]
-for item in editor.template('{nationality}').data:
+for item in list(map(lambda x: x.lower(), editor.template('{nationality}').data)):#editor.template('{nationality}').data:
   nationalities.append(item+'s') 
 
 # from https://lgbta.wikia.org/wiki/Category:Sexuality, https://lgbta.wikia.org/wiki/Category:Gender
@@ -120,24 +120,27 @@ protected = { #'sexual': editor.template('{sexual_adj}').data,
                   'demisexual', 'polysexual', 'bicurious', 'pancurious', 'polyamorous', 'aromantic', 'aro', 'biromantic', 'panromantic'], 
     'gender_identity': ['queer', 'trans', 'transgender', 'transsexual', 'cis', 'cisgender', 'cissexual', 'nonbinary', 'non-binary', 'enby', 'NB', 'genderqueer', 'genderfluid', 'genderflux', 'agender', 'bigender'],
     'race': ['black','hispanic', 'white', 'asian', 'european', 'latino', 'middle eastern', 'african', 'african american', 'american'],
-    'religion': editor.template('{religion_adj}').data,
-    'nationality': editor.template('{nationality}').data, 
+    'religion': list(map(lambda x: x.lower(), editor.template('{religion}').data)),#editor.template('{religion_adj}').data,
+    'nationality': list(map(lambda x: x.lower(), editor.template('{nationality}').data)),#editor.template('{nationality}').data, 
     'nationalities': nationalities, 
-    'country': editor.template('{country}').data,
-    'city': editor.template('{city}').data,
-    'male': editor.template('{male}').data,
-    'female': editor.template('{female}').data,
-    'last_name': editor.template('{last_name}').data,  
-    'women_noun': editor.template('{women_noun}').data,
-    'women_noun_plural': editor.template('{women_noun_plural}').data,
-    'offensive_women_noun': editor.template('{offensive_women_noun}').data,
-    'offensive_women_noun_plural': editor.template('{offensive_women_noun_plural}').data,
-    'offensive_generic': editor.template('{offensive_generic}').data,
-    'work_role': editor.template('{work_role}').data,
-    'fem_work_role': editor.template('{fem_work_role}').data,
-    'male_work_role': editor.template('{male_work_role}').data,
-    'dis': editor.template('{dis}').data,
-    'homeless': editor.template('{homeless}').data,
-    'old': editor.template('{old}').data
+    'country': list(map(lambda x: x.lower(), editor.template('{country}').data)),#editor.template('{country}').data,
+    'city': list(map(lambda x: x.lower(), editor.template('{city}').data)),#editor.template('{city}').data,
+    'male': list(map(lambda x: x.lower(), editor.template('{male}').data)),#editor.template('{male}').data,
+    'female': list(map(lambda x: x.lower(), editor.template('{female}').data)),#editor.template('{female}').data,
+    'last_name': list(map(lambda x: x.lower(), editor.template('{last_name}').data)),#editor.template('{last_name}').data,  
+    'women_noun': list(map(lambda x: x.lower(), editor.template('{women_noun}').data)),#editor.template('{women_noun}').data,
+    'women_noun_plural': list(map(lambda x: x.lower(), editor.template('{women_noun_plural}').data)),#editor.template('{women_noun_plural}').data,
+    'offensive_women_noun': list(map(lambda x: x.lower(), editor.template('{offensive_women_noun}').data)),#editor.template('{offensive_women_noun}').data,
+    'offensive_women_noun_plural': list(map(lambda x: x.lower(), editor.template('{offensive_women_noun_plural}').data)),#editor.template('{offensive_women_noun_plural}').data,
+    'offensive_generic': list(map(lambda x: x.lower(), editor.template('{offensive_generic}').data)),#editor.template('{offensive_generic}').data,
+    'work_role': list(map(lambda x: x.lower(), editor.template('{work_role}').data)),#editor.template('{work_role}').data,
+    'fem_work_role': list(map(lambda x: x.lower(), editor.template('{fem_work_role}').data)),#editor.template('{fem_work_role}').data,
+    'male_work_role': list(map(lambda x: x.lower(), editor.template('{male_work_role}').data)),#editor.template('{male_work_role}').data,
+    'dis': list(map(lambda x: x.lower(), editor.template('{dis}').data)),#editor.template('{dis}').data,
+    'homeless': list(map(lambda x: x.lower(), editor.template('{homeless}').data)),#editor.template('{homeless}').data,
+    'old': list(map(lambda x: x.lower(), editor.template('{old}').data))#editor.template('{old}').data
 }
 
+protected_dictionaries_values=[]
+for i in protected.values():
+  protected_dictionaries_values+=i
