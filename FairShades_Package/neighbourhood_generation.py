@@ -340,7 +340,7 @@ def find_replacement_syn(s):
   tagged = nltk.pos_tag(s.split())
   for (word, tag) in tagged:
     if tag == 'JJ':
-      if len(editor.synonyms(s, word))!=0:
+      if editor.synonyms(s, word):#len(editor.synonyms(s, word))!=0:
         return word, editor.synonyms(s, word)[0]
       else: 
         return None
