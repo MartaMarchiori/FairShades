@@ -38,8 +38,8 @@ class Neighbourhood(object):
     return self.empty(test_robustness(self.sample, self.test))
   def ner(self): 
     return self.empty(test_ner(self.sample, self.test))
-  def taxonomy(self): 
-    return self.empty(test_taxonomy(self.sample, self.test))
+  #def taxonomy(self): 
+  #  return self.empty(test_taxonomy(self.sample, self.test))
 
   def empty(self,ret):
     if len(ret[1])==0:
@@ -54,7 +54,7 @@ class Neighbourhood(object):
     n_voc=0
     n_rob=0
     n_ner=0
-    n_tax=0
+    #n_tax=0
     for item in self.sample:
       f=test_fairness([item], self.test, self.isGlobal)
       ret+=f[1]
@@ -68,15 +68,15 @@ class Neighbourhood(object):
       n=test_ner([item], self.test)
       ret+=n[1]
       n_ner+=np.array(list(n[0].values())).flatten().sum() 
-      t=test_taxonomy([item], self.test)
-      ret+=t[1]
-      n_tax+=np.array(list(t[0].values())).flatten().sum() 
+      #t=test_taxonomy([item], self.test)
+      #ret+=t[1]
+      #n_tax+=np.array(list(t[0].values())).flatten().sum() 
     neigh_type = {
         'fairness':n_fair,
         'vocabulary':n_voc,
         'robustness':n_rob,
-        'ner':n_ner,
-        'taxonomy':n_tax }
+        'ner':n_ner}
+        #'taxonomy':n_tax }
     if self.isGlobal==False:
       print("Total number of neighbours generated: ",len(ret))
     return neigh_type,ret
@@ -329,6 +329,7 @@ def test_ner(samples, test):
 #### V) Taxonomy
 
 #Using WordNet to automatically replace adjectives
+'''
 def change_syn(x):
   syn = find_replacement_syn(x)
   if syn!=None: 
@@ -367,5 +368,5 @@ def test_taxonomy(samples, test):
         if len(temp)!=0:
           ret+=temp
   return neigh_type,ret
-
+'''
 
