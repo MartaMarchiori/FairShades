@@ -63,6 +63,7 @@ def get_groups_mod(text):
 # > Fat - Forensics 
 def print_fairness(metric_name, metric_matrix, protected_feature, bin_names):
     """Prints out which sub-populations violate a group fairness metric."""
+    res=[]
     #print('The *{}* group-based fairness metric for *{}* feature split '
     #      'are:'.format(metric_name, protected_feature))
     for grouping_i, grouping_name_i in enumerate(bin_names):
@@ -71,14 +72,21 @@ def print_fairness(metric_name, metric_matrix, protected_feature, bin_names):
             grouping_j += j_offset
             #is_not = ' >not<' if metric_matrix[grouping_i, grouping_j] else ''
             if metric_matrix[grouping_i, grouping_j]:
-              print('The *{}* group-based fairness metric for *{}* feature split '
-                    'are:'.format(metric_name, protected_feature))
               is_not = ' >not<'
-              print('    * The fairness metric is{} satisfied for "{}" and "{}" '
-                    'sub-populations.'.format(is_not, grouping_name_i,
-                                              grouping_name_j))
-              print('-------')
+              res.append([re.sub(r'[^\w]', '', grouping_name_i),re.sub(r'[^\w]', '', grouping_name_j)])
+              #res.append([grouping_name_i,grouping_name_j])
+              #print('    * The fairness metric is{} satisfied for "{}" and "{}" '
+              #      'sub-populations.'.format(is_not, grouping_name_i,
+              #                                grouping_name_j))
+              #print('-------')
               #print()
+    if res:
+      print('The *{}* group-based fairness metric for *{}* feature split '
+          'are:'.format(metric_name, protected_feature))
+      print('    * The fairness metric is{} satisfied for sub-populations:'.format(is_not))
+      print(res)
+      print('-------')
+
 
 # 1 
 def textual_metrics(df,y_true,y_pred):
