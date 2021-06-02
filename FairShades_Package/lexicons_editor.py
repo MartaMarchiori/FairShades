@@ -26,7 +26,7 @@ homeless = ['tramp', 'hobo', 'drifter', 'beggar', 'vagrant'] #'roofless', 'homel
 old = ['codger', 'grandpa', 'oldie', 'geezer', 'elder']
 
 ############## work-related 
-work_role = ['astronaut', 'academic', 'accountant', 'activist', 'administrator', 'advisor', 'agent', 'analyst','architect', 
+'''work_role = ['astronaut', 'academic', 'accountant', 'activist', 'administrator', 'advisor', 'agent', 'analyst','architect', 
              'assistant', 'attorney', 'artist' 'boxer', 'builder', 'businessman', 'cameraman', 'carpenter', 'clown', 
              'consultant', 'dentist', 'detective', 'developer', 'doctor', 'doorman', 'driver', 'electrician', 
              'economist', 'editor', 'educator', 'entrepreneur', 'executive',
@@ -35,7 +35,9 @@ work_role = ['astronaut', 'academic', 'accountant', 'activist', 'administrator',
              'journalist', 'librarian', 'lifeguard', 'magician', 'mechanic', 'nun', 'nurse', 'painter', 'paramedic', 
              'photographer', 'pilot', 'police', 'poet', 'postman', 'priest', 'professor', 'ranger', 'repairman', 'reporter', 
              'salesman', 'scientist', 'secretary', 'singer', 'soldier', 'student', 'surgeon', 'teacher', 'waiter', 'writer', 
-             'attendant', 'officer', 'player', 'organizer', 'quarterback', 'shooter']
+             'attendant', 'officer', 'player', 'organizer', 'quarterback', 'shooter']'''
+work_role = ['academic', 'quarterback', 'fireman', 'baker', 'entrepreneur', 'interpreter', 'attendant', 'secretary', 'laborer', 'writer', 'student', 'designer', 'poet', 'mechanic', 'investigator', 'dentist', 'tailor', 'ranger', 'foreman', 'lifeguard', 'construction worker', 'professor', 'architect', 'nurse', 'analyst', 'assistant', 'driver', 'footballer', 'editor', 'supervisor', 'hitter', 'farmer', 'librarian', 'chief', 'guard', 'administrator', 'organizer', 'teacher', 'gardener', 'economist', 'janitor', 'hairdresser', 'journalist', 'executive', 'educator', 'priest', 'manager', 'clown', 'scientist', 'builder', 'doorman', 'police', 'cook', 'cashier', 'shooter', 'counselor', 'magician', 'sheriff', 'singer', 'carpenter', 'detective', 'salesman', 'reporter', 'accountant', 'repairman', 'officer', 'fighter', 'investor', 'advisor', 'astronaut', 'paramedic', 'consultant', 'electrician', 'housekeeper', 'photographer', 'engineer', 'physician', 'doctor', 'soldier', 'waiter', 'developer', 'activist', 'attorney', 'mover', 'agent', 'businessman', 'lawyer', 'artistboxer', 'player', 'historian', 'intern', 'pilot', 'CEO', 'painter', 'receptionist', 'clerk', 'salesperson', 'cleaner', 'postman', 'surgeon', 'cameraman', 'nun', 'auditor']
+
 # these sterotyped lists are taken from the file male_occupations.txt and female_occupations.txt from the WiNo dataset 
 fem_work_role = ['attendant', 'cashier', 'teacher', 'nurse', 'assistant', 'secretary', 'auditor', 'cleaner', 
                  'receptionist', 'clerk', 'counselor', 'designer', 'hairdresser', 'writer', 'housekeeper', 
@@ -130,12 +132,12 @@ protected = { #'sexual': editor.template('{sexual_adj}').data,
     'last_name': list(map(lambda x: x.lower(), editor.template('{last_name}').data)),#editor.template('{last_name}').data,  
     'women_noun': list(map(lambda x: x.lower(), editor.template('{women_noun}').data)),#editor.template('{women_noun}').data,
     'women_noun_plural': list(map(lambda x: x.lower(), editor.template('{women_noun_plural}').data)),#editor.template('{women_noun_plural}').data,
-    'offensive_women_noun': list(map(lambda x: x.lower(), editor.template('{offensive_women_noun}').data)),#editor.template('{offensive_women_noun}').data,
-    'offensive_women_noun_plural': list(map(lambda x: x.lower(), editor.template('{offensive_women_noun_plural}').data)),#editor.template('{offensive_women_noun_plural}').data,
+    #'offensive_women_noun': list(map(lambda x: x.lower(), editor.template('{offensive_women_noun}').data)),#editor.template('{offensive_women_noun}').data,
+    #'offensive_women_noun_plural': list(map(lambda x: x.lower(), editor.template('{offensive_women_noun_plural}').data)),#editor.template('{offensive_women_noun_plural}').data,
     'offensive_generic': list(map(lambda x: x.lower(), editor.template('{offensive_generic}').data)),#editor.template('{offensive_generic}').data,
     'work_role': list(map(lambda x: x.lower(), editor.template('{work_role}').data)),#editor.template('{work_role}').data,
-    'fem_work_role': list(map(lambda x: x.lower(), editor.template('{fem_work_role}').data)),#editor.template('{fem_work_role}').data,
-    'male_work_role': list(map(lambda x: x.lower(), editor.template('{male_work_role}').data)),#editor.template('{male_work_role}').data,
+    #'fem_work_role': list(map(lambda x: x.lower(), editor.template('{fem_work_role}').data)),#editor.template('{fem_work_role}').data,
+    #'male_work_role': list(map(lambda x: x.lower(), editor.template('{male_work_role}').data)),#editor.template('{male_work_role}').data,
     'dis': list(map(lambda x: x.lower(), editor.template('{dis}').data)),#editor.template('{dis}').data,
     'homeless': list(map(lambda x: x.lower(), editor.template('{homeless}').data)),#editor.template('{homeless}').data,
     'old': list(map(lambda x: x.lower(), editor.template('{old}').data))#editor.template('{old}').data
