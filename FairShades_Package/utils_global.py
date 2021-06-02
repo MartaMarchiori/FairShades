@@ -162,12 +162,13 @@ def build_global_df(inputs):
 
 def create_bias_keys():
   # SEXISM => Misogyny, gender and sexual orientation
-  sexism_keys=['sexuality', 'gender_identity', 'women_noun', 'women_noun_plural', 'offensive_women_noun', 'offensive_women_noun_plural']#, 'fem_work_role', 'male_work_role']
+  #sexism_keys=['sexuality', 'gender_identity', 'women_noun', 'women_noun_plural', 'offensive_women_noun', 'offensive_women_noun_plural']#, 'fem_work_role', 'male_work_role']
+  sexism_keys=['sexuality', 'gender_identity', 'women_noun', 'women_noun_plural', 'male', 'female']#, 'fem_work_role', 'male_work_role']
   sexism = []
   for key in sexism_keys:
     sexism+=protected.get(key)
   # RACISM => Race, nationality and religion
-  racism_keys=['race', 'religion', 'nationality', 'country', 'city']
+  racism_keys=['race', 'religion', 'nationality', 'nationalities', 'country', 'city', 'work_role']
   racism = []
   for key in racism_keys:
     racism+=protected.get(key)
