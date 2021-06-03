@@ -190,10 +190,10 @@ def divide_corpus_per_bias(corpus):
   racism_samples=[]
   ableism_samples=[]
   for item in corpus:
-    if grouping_global_samples(item,sexism):
+    if grouping_global_samples(item.lower(),sexism):
       sexism_samples+=[item]
-    elif grouping_global_samples(item,racism):
+    elif grouping_global_samples(item.lower(),racism):
       racism_samples+=[item]
-    elif grouping_global_samples(item,ableism):
+    elif grouping_global_samples(item.lower(),ableism):
       ableism_samples+=[item]
   return sexism_samples,racism_samples,ableism_samples
