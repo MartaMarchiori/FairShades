@@ -88,15 +88,34 @@ def inv_var_samples(res):
   variant=[] 
   invariant=[]
   count=0
-  for item in res: 
-    count+=item[0]
-    for neigh in item[1]:
+  count_unfair=0
+  count_unfair_per_neigh=[]
+  count_counterf_per_neigh=[]
+  for i in range(len(res)):
+  #for item in res: 
+    count+=res[i][0]#count+=item[0]
+    unF=False
+    temp_unfair=0
+    temp_counterf=0
+    for neigh in res[i][1]:#for neigh in item[1]:
       if neigh[4]=='The label changes from <non-hateful> to <hateful>' or neigh[4]=='The label changes from <hateful> to <non-hateful>':
         variant.append(neigh)
+        temp_counterf+=1
+        category = search_for_protected(neigh[0])
+        if category:
+          unF=True
+          temp_unfair+=1
       else:
         invariant.append(neigh)
+    if unF:
+      count_unfair+=1
+    count_unfair_per_neigh.append(temp_unfair)
+    count_counterf_per_neigh.append(temp_counterf)
   d = {
         'count':count,
+        'count_unfair':count_unfair, 
+        'count_unfair_per_neigh':count_unfair_per_neigh,
+        'count_counterf_per_neigh':count_counterf_per_neigh,
         'variant':variant,
         'invariant':invariant, 
   }
@@ -106,6 +125,7 @@ def build_global_inputs(corpus,samples,predict_proba):
   global rlc
   rlc=[]
   inputs=[]
+  Fairness=0
   for item in corpus:
     id = samples['all_samples'].index(item)
     real_label_sentence_to_explain=samples['all_label_real'][id]
@@ -115,8 +135,9 @@ def build_global_inputs(corpus,samples,predict_proba):
     predictions = building_predicted_for_neigh(neigh,predict_proba)
     i=ClassificationInput()
     input=i.generate_input([samples['all_samples'][id]], samples['all_proba'][id], neigh[1], predictions)
+    Fairness+=neigh[0]['fairness']
     inputs.append(input)
-  return inputs
+  return Fairness,inputs
 
 def build_global_df(inputs):
   sum = []

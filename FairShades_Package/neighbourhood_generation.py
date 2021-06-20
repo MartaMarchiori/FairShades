@@ -107,7 +107,7 @@ def search_for_protected(x):
     found = []
     for sensitive in protected.keys():
       for p in protected[sensitive]:
-          if re.search(r'\b%s\b' % p, x):
+          if re.search(r'\b%s\b' % p, x.lower()):
             found.append(sensitive)
     return found
 
@@ -162,7 +162,7 @@ def test_fairness(samples, test, isGlobal):
     else:
       n=len(samples)
       for i in range(n):
-        found = search_for_protected(samples[i].lower())
+        found = search_for_protected(samples[i])
         if len(found)!=0:
           if isGlobal==False:
             print('This is a list of protected entities present in your phrase: ',found)

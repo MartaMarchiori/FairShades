@@ -50,10 +50,10 @@ class FairShades(object):
     return l_x
     
   def explain_global(self, corpus, bias):
-    inputs=build_global_inputs(corpus, self.samples, self.predict_proba)
+    nFair,inputs=build_global_inputs(corpus, self.samples, self.predict_proba)
     data,y_true,y_pred,group_membership_data,memberships,group_data,protected_features,df1=build_global_df(inputs)
     g_x=GlobalExplanation()
-    g_expl=g_x.generate_g_explanation(self.samples, corpus, inputs, bias)
+    g_expl=g_x.generate_g_explanation(self.samples, corpus, inputs, bias, nFair)
     return g_x,data,y_true,y_pred,group_membership_data,memberships,group_data,protected_features,df1
 
 

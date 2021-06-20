@@ -161,11 +161,12 @@ class LocalExplanation(object):
     return trees.dtreeviz(sk_dtree, show_just_path=False, X = X, scale=1.5)
 
 class GlobalExplanation(object):
-  def generate_g_explanation(self, samples, corpus, inputs, bias):  
+  def generate_g_explanation(self, samples, corpus, inputs, bias, count_neigh_Fairness):  
     self.samples = samples
     self.corpus = corpus
     self.inputs = inputs
     self.bias = bias
+    self.count_neigh_Fairness = count_neigh_Fairness
     res = []
     for i in range(len(inputs)): # calling local for each record 
       as_input = inputs[i]
@@ -199,20 +200,37 @@ class GlobalExplanation(object):
     variations=average_sc(scores_per_key,sensitive_mentions)
     self.cf=inv_var_samples(res)
     count_neighs=self.cf['count']
+    count_unfair=self.cf['count_unfair']
+    count_unfair_per_neigh=self.cf['count_unfair_per_neigh']
+    count_counterf_per_neigh=self.cf['count_counterf_per_neigh']
+    count_relaxed_unfairness=0
+    for i in range(len(count_unfair_per_neigh)):
+      # c_un over counterf : x over 100 
+      if count_counterf_per_neigh[i] != 0:
+        if ((count_unfair_per_neigh[i]*100)/count_counterf_per_neigh[i]) > 5:
+          count_relaxed_unfairness+=1
     fair = True 
     if self.cf['variant']:
-      count_unfair,grouping_unfair = grouping_content_counterfactuals(self.cf['variant'],sensitive_mentions,protected_entities)
+      count_unfair_neigh,grouping_unfair = grouping_content_counterfactuals(self.cf['variant'],sensitive_mentions,protected_entities)
       if grouping_unfair:
         fair=False 
-        unfair_percentage = (count_unfair*100) / count_neighs # count_unfair : count_neighs = x : 100 
+        unfair_general =  count_unfair/len_dataset
+        unfair_general = round(unfair_general,2)
+        unfair_relaxed =  count_relaxed_unfairness/len_dataset
+        unfair_relaxed = round(unfair_relaxed,2)
+    print("The records in the dataset are: ",len_dataset)
+    print("For each record, the neighbourhoods generated are: ",n_dimensions)
+    print("The records in the dataset that contain mentions to protected identities which cause discrimination are: ",count_unfair)
     print()
     print("------> Is the BB fair, regarding",bias,"?",fair)
     if fair==False:
-      print("------> The BB is UNfair regarding",bias,"at",unfair_percentage,"%")
+      print("------> The BB is strictly UNFair regarding",bias,"at",unfair_general)
+      print("------> The UNFairness is computed as: N of records with even only one unfair neighbour (",count_unfair,") over N of records in the corpus (",len_dataset,")")
+      if unfair_relaxed != unfair_general:
+        print()
+        print("------> The BB is loosely UNFair regarding",bias,"at",unfair_relaxed)
+        print("------> The UNFairness is computed as: N of records with = or > 5% of unfair neighbours (",count_relaxed_unfairness,") over N of records in the corpus (",len_dataset,")")
     print()
-    print("The records in the dataset are: ",len_dataset)
-    print("For each record, the neighbourhoods generated are: ",n_dimensions)
-    print("The records in the dataset that contain mentions to protected identities which cause discrimination are: ",count)
     if fair == False:
       for i in range(len(protected_entities)):
         print()
@@ -222,7 +240,6 @@ class GlobalExplanation(object):
         else:
           print("On average, the Hate probability decreases compared to the original by",round(variations[i][0],2), variations[i][1])
         print() 
-      #self.grouping(cf)
     
   def get_prototypes(self):
     res = []
@@ -269,35 +286,24 @@ class GlobalExplanation(object):
   def data_scientist(self): 
     if self.get=='standard_metrics':
       textual_metrics(self.df1,self.y_true,self.y_pred)
-      selection_rate_fbeta(self.df1,self.y_true,self.y_pred)
     elif self.get=='fairness_metrics':
       Fairness_metrics(self.df1,self.y_true,self.y_pred)
-    elif self.get=='plot_metrics':
-      plots_metrics(self.df1,self.y_true,self.y_pred,self.path)
     elif self.get=='all':
       textual_metrics(self.df1,self.y_true,self.y_pred)
-      selection_rate_fbeta(self.df1,self.y_true,self.y_pred)
       Fairness_metrics(self.df1,self.y_true,self.y_pred)
-      plots_metrics(self.df1,self.y_true,self.y_pred,self.path)
 
 
   def moderator_user(self): 
     if self.get=='fairness_metrics':
       Fairness_metrics(self.df1,self.y_true,self.y_pred)
-    elif self.get=='plot_metrics':
-      plots_metrics(self.df1,self.y_true,self.y_pred,self.path)
     elif self.get=='all':
       Fairness_metrics(self.df1,self.y_true,self.y_pred)
-      plots_metrics(self.df1,self.y_true,self.y_pred,self.path)
 
   def domain_expert(self): 
     if self.get=='fairness_metrics':
       Fairness_metrics(self.df1,self.y_true,self.y_pred)
-    elif self.get=='plot_metrics':
-      plots_metrics(self.df1,self.y_true,self.y_pred,self.path)
     elif self.get=='all':
       Fairness_metrics(self.df1,self.y_true,self.y_pred)
-      plots_metrics(self.df1,self.y_true,self.y_pred,self.path)
 
 
   def grouping_counterfactuals(self):

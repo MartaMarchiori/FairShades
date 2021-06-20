@@ -84,7 +84,19 @@ def print_fairness(metric_name, metric_matrix, protected_feature, bin_names):
       print('The *{}* group-based fairness metric for *{}* feature split '
           'are:'.format(metric_name, protected_feature))
       print('    * The fairness metric is{} satisfied for sub-populations:'.format(is_not))
-      print(res)
+      keys=[]
+      values=[]
+      for item in res:
+        keys.append(item[0])
+      keys=list(set(keys))
+      for k in keys:
+        temp=[]
+        for item in res:
+          if(item[0]==k):
+            temp.append(item[1])
+        values.append(temp)
+      d=dict(zip(keys, zip(values)))
+      print(d)#res
       print('-------')
 
 
@@ -93,29 +105,37 @@ def textual_metrics(df,y_true,y_pred):
   grouped_metric = MetricFrame(skm.recall_score,
                               y_true, y_pred,
                               sensitive_features=df['group_membership_data'])
-  #print("Overall recall = ", grouped_metric.overall)
-  #print("Recall by groups = ", grouped_metric.by_group.to_dict())
-  #print()
-  #print("Min recall over groups = ", grouped_metric.group_min())
-  #print("Max recall over groups = ", grouped_metric.group_max())
-  #print("Difference in recall = ", grouped_metric.difference(method='between_groups'))
-  #print("Ratio in recall = ", grouped_metric.ratio(method='between_groups'))
-  #print()
-  multi_metric = MetricFrame({'Precision':skm.precision_score, 'Recall':skm.recall_score},
+  disparity=df['memberships'].value_counts().index[0] # select the most frequent attribute
+  df = df[df.memberships == disparity]
+  y_true=df['y_true']
+  y_pred=df['y_pred']
+  precision_metric = MetricFrame(skm.precision_score,
                               y_true, y_pred,
                               sensitive_features=df['group_membership_data'], 
-                              #sample_params = {'precision': {'zero_division': [0]}}
+                            )
+  recall_metric = MetricFrame(skm.recall_score,
+                              y_true, y_pred,
+                              sensitive_features=df['group_membership_data'], 
                             )
   print()
-  print('Overall -->')
-  print('Precision: ',multi_metric.overall[0])
-  print('Recall: ',multi_metric.overall[1])
+  print('OVERALL -->')
+  print('Precision: ',precision_metric.overall)
+  print('Recall: ',recall_metric.overall)
   print()
-  print('By groups -->')
-  print(multi_metric.by_group.head())
+  print('BY GROUP VALUES OF --> ',disparity)
+  precision = pd.DataFrame(precision_metric.by_group)  
+  precision = precision.rename(columns={"precision_score": 'Precision'})
+  print(precision.sort_values(by=['Precision']))
+  recall = pd.DataFrame(recall_metric.by_group)  
+  recall = recall.rename(columns={"recall_score": 'Recall'})
+  print(recall.sort_values(by=['Recall']))
 
 # 2
 def Fairness_metrics(df,y_true,y_pred):
+  disparity=df['memberships'].value_counts().index[0] # select the most frequent attribute
+  df = df[df.memberships == disparity]
+  y_true=df['y_true']
+  y_pred=df['y_pred']
   dataset = np.array(df[['text','group_membership_data']].to_records(index=False), dtype=[('text', '<U113'), ('group_membership_data', '<U113')])
   # Select a protected feature
   protected_feature = 'group_membership_data'#'memberships'
@@ -140,49 +160,3 @@ def Fairness_metrics(df,y_true,y_pred):
   print_fairness('Demographic Parity', demographic_parity_matrix, protected_feature, bin_names)
   print()
 
-# 3 
-def plots_metrics(df,y_true,y_pred, path):
-  metrics = {
-        'Accuracy': accuracy_score,
-        'Precision': precision_score,
-        'Recall': recall_score,
-        'False Positive Rate': false_positive_rate,
-        'True Positive Rate': true_positive_rate, 
-        'Selection Rate': selection_rate,
-        'Count': lambda y_true, y_pred: y_true.shape[0],
-        }
-  metric_frame = MetricFrame(metrics, y_true, y_pred, sensitive_features=df['memberships'])
-  metric_frame.by_group.plot.bar(
-        subplots=True, layout=[3,3], legend=False, figsize=[12,8],
-        title='Show all metrics')
-  plt.savefig(path+'/all_metrics.png', transparent=True)
-
-# 4
-def selection_rate_fbeta(df,y_true,y_pred):
-  print()
-  print('Overall -->')
-  print("Selection Rate:", selection_rate(y_true, y_pred))
-  print("Fbeta:", skm.fbeta_score(y_true, y_pred, beta=0.6))
-
-  fbeta_06 = functools.partial(skm.fbeta_score, beta=0.6)
-
-  metric_fns = {'Selection Rate': selection_rate, 'Fbeta': fbeta_06}
-
-  grouped_on_memberships = MetricFrame(metric_fns,
-                              y_true, y_pred,
-                              sensitive_features=df['memberships'])
-  print()
-  print('By groups -->')
-  print(grouped_on_memberships.by_group)
-
-  disparity=df['memberships'].value_counts().index[0] # select the most frequent attribute
-  df = df[df.memberships == disparity]
-  y_true=df['y_true']
-  y_pred=df['y_pred']
-  df.head()
-  grouped_on_disparity = MetricFrame(metric_fns,
-                                y_true, y_pred,
-                                sensitive_features=df['group_membership_data'])
-  print()
-  print('By group members -->')
-  print(grouped_on_disparity.by_group.head())
