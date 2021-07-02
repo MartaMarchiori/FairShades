@@ -117,18 +117,31 @@ def textual_metrics(df,y_true,y_pred):
                               y_true, y_pred,
                               sensitive_features=df['group_membership_data'], 
                             )
+  #accuracy_metric = MetricFrame(accuracy_score,
+  #                            y_true, y_pred,
+  #                            sensitive_features=df['group_membership_data'], 
+  #                          )
   print()
   print('OVERALL -->')
   print('Precision: ',precision_metric.overall)
   print('Recall: ',recall_metric.overall)
+  #print('Accuracy: ',accuracy_metric.overall)
   print()
+  
   print('BY GROUP VALUES OF --> ',disparity)
+  
   precision = pd.DataFrame(precision_metric.by_group)  
   precision = precision.rename(columns={"precision_score": 'Precision'})
-  print(precision.sort_values(by=['Precision']))
+  print(precision.sort_values(by=['Precision']).to_markdown())
+  
   recall = pd.DataFrame(recall_metric.by_group)  
   recall = recall.rename(columns={"recall_score": 'Recall'})
-  print(recall.sort_values(by=['Recall']))
+  print(recall.sort_values(by=['Recall']).to_markdown())
+  
+  #accuracy = pd.DataFrame(accuracy_metric.by_group)  
+  #accuracy = accuracy.rename(columns={"accuracy_score": 'Accuracy'})
+  #print(accuracy.sort_values(by=['Accuracy']).to_markdown())
+  
 
 # 2
 def Fairness_metrics(df,y_true,y_pred):

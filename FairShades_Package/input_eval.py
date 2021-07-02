@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import random
+from sklearn.metrics import accuracy_score
 
 #Definition of the class Wrapper
 #NEEDED INPUT: the corpus and the pre-trained Hate-Speech Classifier to get the BB predictions / predictions, i.e. the predict_proba function
@@ -59,18 +60,22 @@ class Evaluation:
         correct_ids.append(i)
     failed = len(failed_ids)
     failed_rate = 100*failed/n_tot
+    y_pred = self.predicted
+    y_true = self.real
+    accuracy = accuracy_score(y_true, y_pred)
     evaluation = {
         'n_tot': n_tot, 
         'failed': failed, 
         'failed_rate': failed_rate, 
         'failed_ids': failed_ids, 
-        'correct_ids': correct_ids
+        'correct_ids': correct_ids, 
+        'accuracy': accuracy
     }
     return evaluation
 
   def print_evaluation(self,eval):
     print("Summary:")
-    keys = ['Total number of test records', 'Failed predictions', 'Failed prediction percentage', 'Failed IDs records', 'Correct IDs records']
+    keys = ['Total number of test records', 'Failed predictions', 'Failed prediction percentage', 'Failed IDs records', 'Correct IDs records', 'Accuracy']
     i=0
     for key in eval:
       print(keys[i], '->', eval[key])
