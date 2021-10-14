@@ -26,12 +26,12 @@ def heat_map(importances):
   print('-> Scores: ',data_att[0])
 
 # from https://stackoverflow.com/questions/20224526/how-to-extract-the-decision-rules-from-scikit-learn-decision-tree
-def export_py_code(tree, feature_names, max_depth=100, spacing=4):
+def export_py_code(tree, feature_names, spacing=4):
     if spacing < 2:
         raise ValueError('spacing must be > 1')
     # First: export tree to text
     res = export_text(tree, feature_names,#=features, 
-                        max_depth=max_depth,
+                        max_depth=4,
                         #decimals=3,
                         spacing=spacing-1)
     # Second: generate Python code from the text
@@ -138,6 +138,94 @@ def same_leave(sample_id, neigh,dt):
       print("In the neighbourhood of size "+str(len(leaves_ids))+", the original record"+#at index "+str(sample_id)+
             " is located in the leave id "+str(leaves_id_base)+". The records placed in the same leave are "+str(len(common_leaves))+" and are classified as Hateful with probability:")
       return leaves_id_base,common_leaves
+
+
+####
+def find_id_leaves(dt):
+  children_left = dt.tree_.children_left
+  children_right = dt.tree_.children_right
+  leaf_id_nodes = []
+  for i in range(dt.tree_.node_count):
+      if children_left[i] == children_right[i]:
+          leaf_id_nodes.append(i)
+  return leaf_id_nodes
+
+def get_I_from_DTR(dt,d_keys,isAbusive):
+    features=[]
+    scores = []
+    C=[]
+    P=[]
+    values = dt.tree_.value
+    n_nodes = dt.tree_.node_count
+    children_left = dt.tree_.children_left #[i] id of the left child of node i or -1 if leaf node
+    children_right = dt.tree_.children_right #[i]  id of the right child of node i or -1 if leaf node
+    feature = dt.tree_.feature #[i] feature used for splitting node i
+    threshold = dt.tree_.threshold #[i] threshold value at node i
+    node_depth = np.zeros(shape=n_nodes, dtype=np.int64)
+    is_leaves = np.zeros(shape=n_nodes, dtype=bool)
+    stack = [(0, 0)]  # start with the root node id (0) and its depth (0)
+    while len(stack) > 0:
+        node_id, depth = stack.pop()
+        node_depth[node_id] = depth
+        is_split_node = children_left[node_id] != children_right[node_id]
+        if is_split_node:
+            stack.append((children_left[node_id], depth + 1))
+            stack.append((children_right[node_id], depth + 1))
+        else:
+            is_leaves[node_id] = True
+    for i in range(n_nodes):
+        if is_leaves[i]:
+            scores.append(values[i])
+        else:
+            node=i
+            left=children_left[i]
+            #feature=d_keys[feature[i]]
+            #threshold=round(threshold[i],2)
+            right=children_right[i]
+            features.append(d_keys[feature[i]])
+            if isAbusive:
+              if values[children_right[i]]<=0.5: #right se c'e' 
+                C.append([children_right[i],d_keys[feature[i]],values[children_right[i]],True])
+              else:
+                P.append([children_right[i],d_keys[feature[i]],values[children_right[i]],True])
+              if values[children_left[i]]<=0.5: #left se non c'e' 
+                C.append([children_left[i],d_keys[feature[i]],values[children_left[i]],False])
+              else:
+                P.append([children_left[i],d_keys[feature[i]],values[children_left[i]],False])
+            else:
+              if values[children_right[i]]<=0.5: 
+                P.append([children_right[i],d_keys[feature[i]],values[children_right[i]],True])
+              else:
+                C.append([children_right[i],d_keys[feature[i]],values[children_right[i]],True])
+              if values[children_left[i]]<=0.5: 
+                P.append([children_left[i],d_keys[feature[i]],values[children_left[i]],False])
+              else:
+                C.append([children_left[i],d_keys[feature[i]],values[children_left[i]],False])
+    c_terms=[]
+    p_terms=[]
+    leaf_id_nodes=find_id_leaves(dt)
+    for i in C:
+      if i[0] in leaf_id_nodes:
+        c_terms.append(i)
+    for i in P:
+      if i[0] in leaf_id_nodes:
+        p_terms.append(i)
+    #print('C')
+    #print(c_terms)
+    #print('P')
+    #print(p_terms)
+    C_res=[]
+    for item in c_terms:
+      if item[3]:
+        C_res.append(item[1])
+    P_res=[]
+    for item in p_terms:
+      if item[3]:
+        P_res.append(item[1])
+    #print(list(set(C_res)))
+    #print(list(set(P_res)))
+    return list(set(C_res)), list(set(P_res))#c_terms,p_terms
+####
 
 def inv_samples(dt, original, neigh, BoW, sl, l_i, n=3): 
   DTR_pred = dt.tree_.value[l_i]

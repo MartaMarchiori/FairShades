@@ -48,6 +48,21 @@ def getting_mentions(res):
           scores_per_key=add_mentions_in_dict_(scores_per_key, key, [[sample[3],sample[5],sample[4]]])
   return scores_per_key,mentions
 
+####
+
+def unF_DTR(local_c_terms):
+  c=0
+  for key in local_c_terms:
+    category = search_for_protected(key)
+    if category:
+      c+=1
+  if c>0:
+    return True 
+  else: 
+    return False 
+
+####
+
 def grouping_content_counterfactuals(counterfactuals,sensitive_mentions,protected_entities):
   count_unfair=0
   group = {}

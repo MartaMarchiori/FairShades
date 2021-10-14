@@ -22,7 +22,7 @@ from dtreeviz.trees import *
 # Within a parameter of the explainer, personas, provide way at explanation time to change
 
 class LocalExplanation(object): 
-  def generate_l_explanation(self, input, tot=0, isLocal=True, neigh=None, sentence_to_explain=None, real_label_sentence_to_explain=None, correct=None):  
+  def generate_l_explanation(self, input, tot=0, isLocal=True, neigh=None, sentence_to_explain=None, real_label_sentence_to_explain=None, correct=None, isAbusive=None):  
     self.input=input
     self.tot=tot
     self.isLocal=isLocal
@@ -30,6 +30,7 @@ class LocalExplanation(object):
     self.sentence_to_explain=sentence_to_explain
     self.real_label_sentence_to_explain=real_label_sentence_to_explain
     self.correct=correct
+    self.isAbusive=isAbusive
     tweetTok = TweetTokenizer()
     orig_text=input[0][0] #passing the orig text
     orig_proba=[input[0][1][1]] #passing the prediction on the orig text
@@ -67,6 +68,12 @@ class LocalExplanation(object):
     explanation=pre_verbalize(type_of_samples,terms_orig,terms_neigh,self.relevant,self.isLocal,self.tot,self.neigh,self.sentence_to_explain,self.real_label_sentence_to_explain,self.correct,isFirst)
     if self.isLocal==False:
       return explanation
+  
+  def get_DTR_Is(self):
+    C,P = get_I_from_DTR(self.dt,self.d_keys, self.isAbusive)
+    print("Counterfactuals: ",C)
+    print("Prototypes: ",P)
+    return C,P
 
   def get_heatmap(self):
     heat_map(self.relevant_features)
@@ -161,6 +168,86 @@ class LocalExplanation(object):
     return trees.dtreeviz(sk_dtree, show_just_path=False, X = X, scale=1.5)
 
 class GlobalExplanation(object):
+  ####
+  def generate_g_DTR_explanation_C(self, samples, corpus, inputs, bias, count_neigh_Fairness):  
+      self.samples = samples
+      self.corpus = corpus
+      self.inputs = inputs
+      self.bias = bias
+      count_unfair_DTR=0
+      res = []
+      for i in range(len(inputs)): # calling local for each record 
+        as_input = inputs[i]
+        l_x=LocalExplanation()
+        l_x.generate_l_explanation(as_input, len(as_input[1]), False)
+        l_expl=l_x.get_DTR_Is()
+        if l_expl[0] != []:
+          res.append(l_expl[0]) # appending local c. to res 
+          if unF_DTR(l_expl[0]):
+              count_unfair_DTR+=1
+      len_dataset=len(inputs)
+      mentions=[]
+      for record in res:
+          mentions+=record
+      mentions=list(set(mentions))
+      print("All the counterfactuals: ",mentions)
+      global protected_entities
+      protected_entities = [] 
+      for key in mentions:
+        category = search_for_protected(key)
+        if category:
+          protected_entities.append([category[0], key])
+      print("All the protected counterfactuals and their category: ",protected_entities)
+      print()
+      fair=True 
+      if count_unfair_DTR>0:
+          fair=False 
+          unfair_general =  count_unfair_DTR/len_dataset
+          unfair_general = round(unfair_general,2)
+      print("The records in the dataset are: ",len_dataset)
+      print("The records in the dataset that contain mentions to protected identities which cause discrimination are: ",count_unfair_DTR)
+      print()
+      print("------> Is the BB fair, regarding",bias,"?",fair)
+      if fair==False:
+        print("------> The BB is strictly UNFair regarding",bias,"at",unfair_general)
+        print("------> The UNFairness is computed as: N of records with at least one unfair neighbour (",count_unfair_DTR,") over N of records in the corpus (",len_dataset,")")
+        for i in range(len(protected_entities)):
+          print()
+          print('-> "',protected_entities[i][1],'" is a counterfactual term that belongs to the protected attribute <',protected_entities[i][0],'>')
+          print()
+  
+  def generate_g_DTR_explanation_P(self, samples, corpus, inputs, bias, count_neigh_Fairness):  
+      self.samples = samples
+      self.corpus = corpus
+      self.inputs = inputs
+      self.bias = bias
+      res = []
+      for i in range(len(inputs)): # calling local for each record 
+        as_input = inputs[i]
+        l_x=LocalExplanation()
+        l_x.generate_l_explanation(as_input, len(as_input[1]), False)
+        l_expl=l_x.get_DTR_Is()
+        if l_expl[1] != []:
+          res.append(l_expl[1]) # appending local p. to res 
+      mentions=[]
+      for record in res:
+          mentions+=record
+      mentions=list(set(mentions))
+      print("All the prototypes: ",mentions)
+      global protected_entities
+      protected_entities = [] 
+      for key in mentions:
+        category = search_for_protected(key)
+        if category:
+          protected_entities.append([category[0], key])
+      print("All the protected prototypes and their category: ",protected_entities)
+      print()
+      for i in range(len(protected_entities)):
+        print()
+        print('-> "',protected_entities[i][1],'" is a prototype term that belongs to the protected attribute <',protected_entities[i][0],'>')
+        print()
+  ####
+
   def generate_g_explanation(self, samples, corpus, inputs, bias, count_neigh_Fairness):  
     self.samples = samples
     self.corpus = corpus

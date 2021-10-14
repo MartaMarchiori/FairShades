@@ -78,7 +78,7 @@ tfidf = TfidfVectorizer(
     #smooth_idf=False, # Smooth idf weights by adding one to document frequencies, as if an extra document was seen containing every term in the collection exactly once. Prevents zero divisions.
     #sublinear_tf=True # Apply sublinear tf scaling, i.e. replace tf with 1 + log(tf).
     )
-
+'''
 def dtree_grid_search(X,y,nfolds,n=10):
     #'max_depth': np.arange(2, n), 
     param_grid = {'min_samples_split': np.arange(2, n), 'min_samples_leaf': np.arange(2, n)}
@@ -86,12 +86,13 @@ def dtree_grid_search(X,y,nfolds,n=10):
     dtree_gscv = GridSearchCV(dtree_model, param_grid, cv=nfolds)
     dtree_gscv.fit(X, y)
     return dtree_gscv.best_params_
-
+'''
 def get_best_dtr(vect_technique,neigh,proba,n=10):
-  param=dtree_grid_search(neigh,proba,n)
+  ####param=dtree_grid_search(neigh,proba,n)
   global dt 
   #max_depth=param['max_depth'], 
-  dt = DecisionTreeRegressor(min_samples_split=param['min_samples_split'], min_samples_leaf=param['min_samples_leaf'], random_state=0)
+  dt = DecisionTreeRegressor(max_depth=4, random_state=0)
+  ####dt = DecisionTreeRegressor(min_samples_split=param['min_samples_split'], min_samples_leaf=param['min_samples_leaf'], random_state=0)
   dt.fit(neigh, proba)
   cv_results = cross_validate(dt, neigh, proba, cv=n, return_estimator=True)
   fi_list=[]
