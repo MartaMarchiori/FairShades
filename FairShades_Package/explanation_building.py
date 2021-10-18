@@ -35,6 +35,7 @@ class LocalExplanation(object):
     orig_text=input[0][0] #passing the orig text
     orig_proba=[input[0][1][1]] #passing the prediction on the orig text
     counterfactuals=toDataFrame(input[1])
+    self.size_local_neigh=len(input[1])
     self.df = pd.DataFrame() 
     self.df['text']=orig_text+counterfactuals[0] 
     self.df['hate_proba']=orig_proba+counterfactuals[1] 
@@ -71,16 +72,21 @@ class LocalExplanation(object):
   
   def get_DTR_Is(self):
     C,P = get_I_from_DTR(self.dt,self.d_keys, self.isAbusive)
-    print("Counterfactuals: ",C)
-    print("Prototypes: ",P)
-    return C,P
+    if self.isLocal==True:
+      print("------> Showing DTR counterfactuals:",C)
+      print()
+      print("------> Showing DTR prototypes:",P)
+    if self.isLocal==False:
+      return C,P,self.size_local_neigh
 
   def get_heatmap(self):
+    print()
     heat_map(self.relevant_features)
   
   def get_all(self):
     self.get_counterfactuals()
     self.get_prototypes()
+    self.get_DTR_Is()
     self.get_heatmap()
 
 
@@ -168,85 +174,88 @@ class LocalExplanation(object):
     return trees.dtreeviz(sk_dtree, show_just_path=False, X = X, scale=1.5)
 
 class GlobalExplanation(object):
-  ####
-  def generate_g_DTR_explanation_C(self, samples, corpus, inputs, bias, count_neigh_Fairness):  
+####
+  def generate_g_DTR_explanation(self, samples, corpus, inputs, bias, count_neigh_Fairness):  
       self.samples = samples
       self.corpus = corpus
       self.inputs = inputs
       self.bias = bias
       count_unfair_DTR=0
-      res = []
+      res_C = []
+      res_P = []
+      n_dimensions=[]
       for i in range(len(inputs)): # calling local for each record 
         as_input = inputs[i]
         l_x=LocalExplanation()
         l_x.generate_l_explanation(as_input, len(as_input[1]), False)
         l_expl=l_x.get_DTR_Is()
         if l_expl[0] != []:
-          res.append(l_expl[0]) # appending local c. to res 
+          res_C.append(l_expl[0]) # appending local c. to res 
           if unF_DTR(l_expl[0]):
               count_unfair_DTR+=1
+        if l_expl[1] != []:
+          res_P.append(l_expl[1]) # appending local p. to res
+        n_dimensions.append(l_expl[2])
       len_dataset=len(inputs)
-      mentions=[]
-      for record in res:
-          mentions+=record
-      mentions=list(set(mentions))
-      print("All the counterfactuals: ",mentions)
+      mentions_C=[]
+      for record in res_C:
+          mentions_C+=record
+      mentions_C=list(set(mentions_C))
       global protected_entities
       protected_entities = [] 
-      for key in mentions:
+      for key in mentions_C:
         category = search_for_protected(key)
         if category:
           protected_entities.append([category[0], key])
-      print("All the protected counterfactuals and their category: ",protected_entities)
-      print()
+      global sensitive_mentions
+      sensitive_mentions = []
+      for item in protected_entities:
+        sensitive_mentions.append(item[1])
+      #print("All the protected counterfactuals and their category: ",protected_entities)
+      mentions_P=[]
+      for record in res_P:
+          mentions_P+=record
+      mentions_P=list(set(mentions_P))
+      global protected_entities_P
+      protected_entities_P = [] 
+      for key in mentions_P:
+        category = search_for_protected(key)
+        if category:
+          protected_entities_P.append([category[0], key])
+      global sensitive_mentions_P
+      sensitive_mentions_P = []
+      for item in protected_entities_P:
+        sensitive_mentions_P.append(item[1])
+      #print("All the protected prototypes and their category: ",protected_entities_P)
       fair=True 
       if count_unfair_DTR>0:
           fair=False 
           unfair_general =  count_unfair_DTR/len_dataset
           unfair_general = round(unfair_general,2)
       print("The records in the dataset are: ",len_dataset)
+      print("For each record, the neighbourhoods generated are: ",n_dimensions)
       print("The records in the dataset that contain mentions to protected identities which cause discrimination are: ",count_unfair_DTR)
       print()
-      print("------> Is the BB fair, regarding",bias,"?",fair)
-      if fair==False:
-        print("------> The BB is strictly UNFair regarding",bias,"at",unfair_general)
-        print("------> The UNFairness is computed as: N of records with at least one unfair neighbour (",count_unfair_DTR,") over N of records in the corpus (",len_dataset,")")
-        for i in range(len(protected_entities)):
-          print()
-          print('-> "',protected_entities[i][1],'" is a counterfactual term that belongs to the protected attribute <',protected_entities[i][0],'>')
-          print()
-  
-  def generate_g_DTR_explanation_P(self, samples, corpus, inputs, bias, count_neigh_Fairness):  
-      self.samples = samples
-      self.corpus = corpus
-      self.inputs = inputs
-      self.bias = bias
-      res = []
-      for i in range(len(inputs)): # calling local for each record 
-        as_input = inputs[i]
-        l_x=LocalExplanation()
-        l_x.generate_l_explanation(as_input, len(as_input[1]), False)
-        l_expl=l_x.get_DTR_Is()
-        if l_expl[1] != []:
-          res.append(l_expl[1]) # appending local p. to res 
-      mentions=[]
-      for record in res:
-          mentions+=record
-      mentions=list(set(mentions))
-      print("All the prototypes: ",mentions)
-      global protected_entities
-      protected_entities = [] 
-      for key in mentions:
-        category = search_for_protected(key)
-        if category:
-          protected_entities.append([category[0], key])
-      print("All the protected prototypes and their category: ",protected_entities)
+      print("(1) Is the BB fair, regarding",bias,"?",fair)
       print()
-      for i in range(len(protected_entities)):
+      if fair==False:
+        print("(2) The BB is strictly UNFair regarding",bias,"at",unfair_general)
+        print("    The UNFairness is computed as: N of records with at least one unfair neighbour (",count_unfair_DTR,") over N of records in the corpus (",len_dataset,")")
         print()
-        print('-> "',protected_entities[i][1],'" is a prototype term that belongs to the protected attribute <',protected_entities[i][0],'>')
-        print()
-  ####
+        print("(3) Counterfactual terms:")
+        #print("All the counterfactuals: ",mentions_C)
+        print("    ",grouping_DTR_influential(sensitive_mentions,protected_entities))
+        #for i in range(len(protected_entities)):
+        #  print('-> "',protected_entities[i][1],'" belongs to the protected attribute <',protected_entities[i][0],'>')
+      #if fair==True: 
+      #  print("All the counterfactuals: ",mentions_C)
+      #print("All the prototypes: ",mentions_P)
+      print()
+      print("(4) Prototype terms:")
+      print("    ",grouping_DTR_influential(sensitive_mentions_P,protected_entities_P))
+      #for i in range(len(protected_entities_P)):
+      #  print('-> "',protected_entities_P[i][1],'" belongs to the protected attribute <',protected_entities_P[i][0],'>')
+####
 
   def generate_g_explanation(self, samples, corpus, inputs, bias, count_neigh_Fairness):  
     self.samples = samples
@@ -312,7 +321,7 @@ class GlobalExplanation(object):
     print("------> Is the BB fair, regarding",bias,"?",fair)
     if fair==False:
       print("------> The BB is strictly UNFair regarding",bias,"at",unfair_general)
-      print("------> The UNFairness is computed as: N of records with even only one unfair neighbour (",count_unfair,") over N of records in the corpus (",len_dataset,")")
+      print("------> The UNFairness is computed as: N of records with at least one unfair neighbour (",count_unfair,") over N of records in the corpus (",len_dataset,")")
       if unfair_relaxed != unfair_general:
         print()
         print("------> The BB is loosely UNFair regarding",bias,"at",unfair_relaxed)

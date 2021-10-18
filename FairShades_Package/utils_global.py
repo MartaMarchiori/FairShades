@@ -49,7 +49,6 @@ def getting_mentions(res):
   return scores_per_key,mentions
 
 ####
-
 def unF_DTR(local_c_terms):
   c=0
   for key in local_c_terms:
@@ -61,6 +60,11 @@ def unF_DTR(local_c_terms):
   else: 
     return False 
 
+def grouping_DTR_influential(sensitive_mentions,protected_entities):
+  group = {}
+  for item in protected_entities:
+    group=add_mentions_in_dict_(group, item[0], [item[1]])        
+  return group
 ####
 
 def grouping_content_counterfactuals(counterfactuals,sensitive_mentions,protected_entities):

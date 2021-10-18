@@ -139,7 +139,6 @@ def same_leave(sample_id, neigh,dt):
             " is located in the leave id "+str(leaves_id_base)+". The records placed in the same leave are "+str(len(common_leaves))+" and are classified as Hateful with probability:")
       return leaves_id_base,common_leaves
 
-
 ####
 def find_id_leaves(dt):
   children_left = dt.tree_.children_left
@@ -210,10 +209,6 @@ def get_I_from_DTR(dt,d_keys,isAbusive):
     for i in P:
       if i[0] in leaf_id_nodes:
         p_terms.append(i)
-    #print('C')
-    #print(c_terms)
-    #print('P')
-    #print(p_terms)
     C_res=[]
     for item in c_terms:
       if item[3]:
@@ -222,9 +217,7 @@ def get_I_from_DTR(dt,d_keys,isAbusive):
     for item in p_terms:
       if item[3]:
         P_res.append(item[1])
-    #print(list(set(C_res)))
-    #print(list(set(P_res)))
-    return list(set(C_res)), list(set(P_res))#c_terms,p_terms
+    return list(set(C_res)), list(set(P_res))
 ####
 
 def inv_samples(dt, original, neigh, BoW, sl, l_i, n=3): 

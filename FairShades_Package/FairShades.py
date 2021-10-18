@@ -57,16 +57,9 @@ class FairShades(object):
     g_expl=g_x.generate_g_explanation(self.samples, corpus, inputs, bias, nFair)
     return g_x,data,y_true,y_pred,group_membership_data,memberships,group_data,protected_features,df1
 
-  def explain_global_via_DTR_C(self, corpus, bias):
+  def explain_global_via_DTR(self, corpus, bias):
     nFair,inputs=build_global_inputs(corpus, self.samples, self.predict_proba)
     data,y_true,y_pred,group_membership_data,memberships,group_data,protected_features,df1=build_global_df(inputs)
     g_x=GlobalExplanation()
-    g_expl=g_x.generate_g_DTR_explanation_C(self.samples, corpus, inputs, bias, nFair)
-    #### miss return 
-
-  def explain_global_via_DTR_P(self, corpus, bias):
-    nFair,inputs=build_global_inputs(corpus, self.samples, self.predict_proba)
-    data,y_true,y_pred,group_membership_data,memberships,group_data,protected_features,df1=build_global_df(inputs)
-    g_x=GlobalExplanation()
-    g_expl=g_x.generate_g_DTR_explanation_P(self.samples, corpus, inputs, bias, nFair)
-    #### miss return 
+    g_expl=g_x.generate_g_DTR_explanation(self.samples, corpus, inputs, bias, nFair)
+    return g_x,data,y_true,y_pred,group_membership_data,memberships,group_data,protected_features,df1
