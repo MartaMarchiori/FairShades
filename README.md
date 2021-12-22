@@ -7,6 +7,4 @@ We conduct several experiments on BERT-based models to demonstrate our proposal'
 
 This project is the continuation of a master's thesis project supervised and developed with Riccardo Guidotti, University of Pisa.
 
-Guidotti, Riccardo, and Stefano Viotto. "Interpretable Next Basket Prediction Boosted with Representative Recipes." 2020 IEEE Second International Conference on Cognitive Machine Intelligence (CogMI). IEEE, 2020.
-
 > Marta Marchiori Manerba and Riccardo Guidotti. "FairShades: Fairness Auditing via Explainability in Abusive Language Detection Systems". 2021 IEEE Second International Conference on Cognitive Machine Intelligence ([CogMI](http://www.sis.pitt.edu/lersais/conference/cogmi/2021/)). IEEE, 2021.
