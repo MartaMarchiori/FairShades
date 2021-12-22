@@ -109,7 +109,8 @@ def textual_metrics(df,y_true,y_pred):
   df = df[df.memberships == disparity]
   y_true=df['y_true']
   y_pred=df['y_pred']
-  precision_metric = MetricFrame(skm.precision_score,
+  #precision_score_=functools.partial(skm.precision_score, zero_division=1)
+  precision_metric = MetricFrame(skm.precision_score, #precision_score_,
                               y_true, y_pred,
                               sensitive_features=df['group_membership_data'], 
                             )
@@ -162,14 +163,14 @@ def Fairness_metrics(df,y_true,y_pred):
   print()
   # Get the Equal Accuracy binary matrix
   equal_accuracy_matrix = fatf_mfm.equal_accuracy(confusion_matrix_per_bin)
-  print_fairness('Equal Accuracy', equal_accuracy_matrix, protected_feature, bin_names)
+  print_fairness('Equal Accuracy', equal_accuracy_matrix, disparity, bin_names)
   print()
   # Get the Equal Opportunity binary matrix
   equal_opportunity_matrix = fatf_mfm.equal_opportunity(confusion_matrix_per_bin)
-  print_fairness('Equal Opportunity', equal_opportunity_matrix, protected_feature, bin_names)
+  print_fairness('Equal Opportunity', equal_opportunity_matrix, disparity, bin_names)
   print()
   # Get the Demographic Parity binary matrix
   demographic_parity_matrix = fatf_mfm.demographic_parity(confusion_matrix_per_bin)
-  print_fairness('Demographic Parity', demographic_parity_matrix, protected_feature, bin_names)
+  print_fairness('Demographic Parity', demographic_parity_matrix, disparity, bin_names)
   print()
 

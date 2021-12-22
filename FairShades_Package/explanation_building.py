@@ -22,7 +22,7 @@ from dtreeviz.trees import *
 # Within a parameter of the explainer, personas, provide way at explanation time to change
 
 class LocalExplanation(object): 
-  def generate_l_explanation(self, input, tot=0, isLocal=True, neigh=None, sentence_to_explain=None, real_label_sentence_to_explain=None, correct=None, isAbusive=None):  
+  def generate_l_explanation(self, input, tot=0, isLocal=True, neigh=None, sentence_to_explain=None, real_label_sentence_to_explain=None, correct=None):  
     self.input=input
     self.tot=tot
     self.isLocal=isLocal
@@ -30,20 +30,23 @@ class LocalExplanation(object):
     self.sentence_to_explain=sentence_to_explain
     self.real_label_sentence_to_explain=real_label_sentence_to_explain
     self.correct=correct
-    self.isAbusive=isAbusive
     tweetTok = TweetTokenizer()
     orig_text=input[0][0] #passing the orig text
     orig_proba=[input[0][1][1]] #passing the prediction on the orig text
+    if input[0][1][1] <= 0.5:
+      self.isAbusive=False
+    else: 
+      self.isAbusive=True 
     counterfactuals=toDataFrame(input[1])
     self.size_local_neigh=len(input[1])
     self.df = pd.DataFrame() 
     self.df['text']=orig_text+counterfactuals[0] 
-    self.df['hate_proba']=orig_proba+counterfactuals[1] 
+    self.df['abusive_proba']=orig_proba+counterfactuals[1] 
     df_not_tokenized=self.df.copy()
     self.df['text'] = tweets_preprocessing(self.df['text'])
     self.df['text']=self.df.text.apply((lambda x: tweetTok.tokenize(x)))
     self.neigh_BoW=vectorizer.fit_transform(self.df['text']).todense() 
-    self.dt,self.d_keys,self.d_voc,importances=get_best_dtr(vectorizer,self.neigh_BoW,self.df['hate_proba'],n=10)
+    self.dt,self.d_keys,self.d_voc,importances=get_best_dtr(vectorizer,self.neigh_BoW,self.df['abusive_proba'],n=10)
     self.relevant_features=importances[importances['importance'] != 0] 
     id_relevant_features=self.relevant_features.index
     percentage = ( len(input[1]) * 10 ) / 100 
@@ -139,7 +142,7 @@ class LocalExplanation(object):
 
     scores_MAE = []
     for i in range(15):
-      x_train, x_test, y_train, y_test = train_test_split(self.neigh_BoW, self.df['hate_proba'], test_size= 0.15)
+      x_train, x_test, y_train, y_test = train_test_split(self.neigh_BoW, self.df['abusive_proba'], test_size= 0.15)
       s=local_fitting(x_train, x_test, y_train, y_test)
       scores_MAE.append(s)
     avg=average(scores_MAE)
@@ -154,8 +157,8 @@ class LocalExplanation(object):
     x_data=self.neigh_BoW
     x_data=np.array(x_data)
     features_model=self.d_keys
-    dataset_target_reg=self.df['hate_proba'] 
-    target_reg='Hate'
+    dataset_target_reg=self.df['abusive_proba'] 
+    target_reg='Abusive'
     sk_dtree = ShadowSKDTree(self.dt, x_data, dataset_target_reg, features_model, target_reg)
     viz = dtreeviz(self.dt,x_data,dataset_target_reg,target_name=target_reg,  # this name will be displayed at the leaf node
                   feature_names=features_model,title="Decision Tree Regressor on neighbourhood",title_fontsize=12,scale=2)
@@ -167,8 +170,8 @@ class LocalExplanation(object):
     x_data=self.neigh_BoW
     x_data=np.array(x_data)
     features_model=self.d_keys
-    dataset_target_reg=self.df['hate_proba'] 
-    target_reg='Hate'
+    dataset_target_reg=self.df['abusive_proba'] 
+    target_reg='Abusive'
     sk_dtree = ShadowSKDTree(self.dt, x_data, dataset_target_reg, features_model, target_reg)
     X = x_data[0]
     return trees.dtreeviz(sk_dtree, show_just_path=False, X = X, scale=1.5)
@@ -216,6 +219,7 @@ class GlobalExplanation(object):
       for record in res_P:
           mentions_P+=record
       mentions_P=list(set(mentions_P))
+      mentions_P=clean_prototypes(mentions_P,mentions_C)
       global protected_entities_P
       protected_entities_P = [] 
       for key in mentions_P:
@@ -244,7 +248,9 @@ class GlobalExplanation(object):
         print()
         print("(3) Counterfactual terms:")
         #print("All the counterfactuals: ",mentions_C)
-        print("    ",grouping_DTR_influential(sensitive_mentions,protected_entities))
+        dic_C=grouping_DTR_influential(sensitive_mentions,protected_entities)
+        for key,value in dic_C.items():
+          print('    ', key, ':', value)
         #for i in range(len(protected_entities)):
         #  print('-> "',protected_entities[i][1],'" belongs to the protected attribute <',protected_entities[i][0],'>')
       #if fair==True: 
@@ -252,7 +258,9 @@ class GlobalExplanation(object):
       #print("All the prototypes: ",mentions_P)
       print()
       print("(4) Prototype terms:")
-      print("    ",grouping_DTR_influential(sensitive_mentions_P,protected_entities_P))
+      dic_P=grouping_DTR_influential(sensitive_mentions_P,protected_entities_P)
+      for key,value in dic_P.items():
+          print('    ', key, ':', value)
       #for i in range(len(protected_entities_P)):
       #  print('-> "',protected_entities_P[i][1],'" belongs to the protected attribute <',protected_entities_P[i][0],'>')
 ####
@@ -332,9 +340,9 @@ class GlobalExplanation(object):
         print()
         print('-> If it is present the term <',protected_entities[i][1],'> that belongs to the protected group <',protected_entities[i][0],'> and that term is replaced by',protected_entities[i][2],':')
         if (variations[i][0]<0):
-          print("On average, the Hate probability increases compared to the original by",round(-variations[i][0],2),variations[i][1])
+          print("On average, the Abusive probability increases compared to the original by",round(-variations[i][0],2),variations[i][1])
         else:
-          print("On average, the Hate probability decreases compared to the original by",round(variations[i][0],2), variations[i][1])
+          print("On average, the Abusive probability decreases compared to the original by",round(variations[i][0],2), variations[i][1])
         print() 
     
   def get_prototypes(self):

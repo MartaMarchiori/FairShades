@@ -136,7 +136,7 @@ def same_leave(sample_id, neigh,dt):
       common_leaves = np.where(leaves_ids==leaves_id_base)
       common_leaves = np.delete(common_leaves,np.where(common_leaves[0]==sample_id))
       print("In the neighbourhood of size "+str(len(leaves_ids))+", the original record"+#at index "+str(sample_id)+
-            " is located in the leave id "+str(leaves_id_base)+". The records placed in the same leave are "+str(len(common_leaves))+" and are classified as Hateful with probability:")
+            " is located in the leave id "+str(leaves_id_base)+". The records placed in the same leave are "+str(len(common_leaves))+" and are classified as Abusive with probability:")
       return leaves_id_base,common_leaves
 
 ####
@@ -233,9 +233,9 @@ def inv_samples(dt, original, neigh, BoW, sl, l_i, n=3):
   for index in index_invariant:
     invariant_s.append(neigh[index-1])
   d = {
-        'Leaf Hate value': round(DTR_pred[0][0],3),
+        'Leaf Abusive value': round(DTR_pred[0][0],3),
         #'index_invariant':index_invariant,
-        'Invariant samples and probabilities (non-hate, hate)':invariant_s
+        'Invariant samples and probabilities (non-abusive, abusive)':invariant_s
   }
   return d
 
@@ -245,7 +245,7 @@ The ids from here are a little mixed:
 * in the structure returned by the neigh. generation process, there isn't: so from the start (index 0) there is the neigh. 
 '''
 
-# working with df['hate_proba']
+# working with df['abusive_proba']
 def relevant_samples(original, neigh, n): 
     proba=original[1][1]
     diff=[]
@@ -262,21 +262,21 @@ def relevant_samples(original, neigh, n):
       diff.append(abs_diff) # neigh does not contain the original record
       diff_with_signs.append(proba - neigh[i][1][1]) # removing abs because we need to keep the information about the increase or decrease
       if (proba < 0.5 and neigh[i][1][1] < 0.5):
-        label_change.append('The label remains <non-hateful>.')
+        label_change.append('The label remains <non-abusive>.')
         not_influential.append(neigh[i]) 
         indexes_not_relevant.append(i)
       elif (proba < 0.5 and neigh[i][1][1] > 0.5):
-        label_change.append('The label changes from <non-hateful> to <hateful>')
+        label_change.append('The label changes from <non-abusive> to <abusive>')
         i_largest.append(i)
         temp.append(abs_diff)
         #influential.append(neigh[i])
         #indexes_relevant.append(i)
       elif (proba > 0.5 and neigh[i][1][1] > 0.5):
-        label_change.append('The label remains <hateful>.')   
+        label_change.append('The label remains <abusive>.')   
         not_influential.append(neigh[i]) 
         indexes_not_relevant.append(i)
       elif (proba > 0.5 and neigh[i][1][1] < 0.5):
-        label_change.append('The label changes from <hateful> to <non-hateful>')  
+        label_change.append('The label changes from <abusive> to <non-abusive>')  
         i_largest.append(i)
         temp.append(abs_diff)
         #influential.append(neigh[i])
@@ -336,7 +336,7 @@ def find_keys(a,dictionary):
       a[i][n]=dictionary[temp] # getting the value and replacing in the array a 
   return a 
 
-# verbalize the explanation, i.e. contains (x addedd or substituted) ⇒ hate_proba goes up / down of y 
+# verbalize the explanation, i.e. contains (x addedd or substituted) ⇒ abusive_proba goes up / down of y 
 def pre_verbalize(key,terms_orig,terms_neigh,relevant,isLocal,tot=0,neigh=None,sentence_to_explain=None,real_label_sentence_to_explain=None,correct=None, isFirst=False):
   label_change=relevant['label_change']
   diff=relevant['differences']
@@ -347,11 +347,11 @@ def pre_verbalize(key,terms_orig,terms_neigh,relevant,isLocal,tot=0,neigh=None,s
   else:
     samples_key='not_influential_samples'
   result=[]
-  Hate_increase=False
+  Abusive_increase=False
   for i in range(len(indexes)): # for each phrase 
     if differences_with_signs[indexes[i]] < 0: # retrieve the diff from the index 
-      Hate_increase=True # proba was < proba_neigh, i.e. resulting in negative diff.
-    result.append([relevant[samples_key][i][0],terms_neigh[i],terms_orig[i],diff[indexes[i]],label_change[indexes[i]],Hate_increase])
+      Abusive_increase=True # proba was < proba_neigh, i.e. resulting in negative diff.
+    result.append([relevant[samples_key][i][0],terms_neigh[i],terms_orig[i],diff[indexes[i]],label_change[indexes[i]],Abusive_increase])
   if isLocal:
     # printing some captions 
     # tot=0
@@ -360,9 +360,9 @@ def pre_verbalize(key,terms_orig,terms_neigh,relevant,isLocal,tot=0,neigh=None,s
         tot+=item
       print("The record you chose to explain is: ",sentence_to_explain)
       if real_label_sentence_to_explain == 1:
-        print("It is an hateful record")
+        print("It is an abusive record")
       else:
-        print("It is a non-hateful record")
+        print("It is a non-abusive record")
       if correct == False:
         print("The original record was wrongly classified by the Black Box! :( Don't worry, our Explainer will tell you more about it")
       else:
@@ -382,9 +382,9 @@ def pre_verbalize(key,terms_orig,terms_neigh,relevant,isLocal,tot=0,neigh=None,s
     for item in result:
       print('«',item[0],'»')
       if not item[1]: #addition 
-        print('If <',item[2][0],'> is present, the difference in the probability w.r.t. <hateful> within the original record is of',round(item[3],2))
+        print('If <',item[2][0],'> is present, the difference in the probability w.r.t. <abusive> within the original record is of',round(item[3],2))
       else:
-        print('If <',item[1][0],'> is present, the difference in the probability w.r.t. <hateful> within the original record is of',round(item[3],2))
+        print('If <',item[1][0],'> is present, the difference in the probability w.r.t. <abusive> within the original record is of',round(item[3],2))
       print(item[4]) 
       print()
   return tot,result 

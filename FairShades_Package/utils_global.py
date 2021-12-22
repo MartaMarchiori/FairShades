@@ -65,6 +65,13 @@ def grouping_DTR_influential(sensitive_mentions,protected_entities):
   for item in protected_entities:
     group=add_mentions_in_dict_(group, item[0], [item[1]])        
   return group
+
+def clean_prototypes(mentions_P,mentions_C):
+  res=[]
+  for item in mentions_P:
+    if item not in mentions_C:
+      res.append(item)
+  return res 
 ####
 
 def grouping_content_counterfactuals(counterfactuals,sensitive_mentions,protected_entities):
@@ -117,7 +124,7 @@ def inv_var_samples(res):
     temp_unfair=0
     temp_counterf=0
     for neigh in res[i][1]:#for neigh in item[1]:
-      if neigh[4]=='The label changes from <non-hateful> to <hateful>' or neigh[4]=='The label changes from <hateful> to <non-hateful>':
+      if neigh[4]=='The label changes from <non-abusive> to <abusive>' or neigh[4]=='The label changes from <abusive> to <non-abusive>':
         variant.append(neigh)
         temp_counterf+=1
         category = search_for_protected(neigh[0])
@@ -164,17 +171,17 @@ def build_global_df(inputs):
   text_corpus = []
   for item in inputs:
     if item[0][1][1]<0.5: # orig. 
-      predicted.append(0) # non-hateful 
+      predicted.append(0) # non-abusive 
     else: 
-      predicted.append(1) # hateful 
+      predicted.append(1) # abusive 
     text_corpus+=item[0][0]
     sum.append(1+len(item[1]))
     for n in item[1]: # neigh. 
       text_corpus.append(n[0])
       if n[1][1]<0.5:
-        predicted.append(0) # non-hateful 
+        predicted.append(0) # non-abusive 
       else: 
-        predicted.append(1) # hateful 
+        predicted.append(1) # abusive 
   real_labels=[]
   for i in range(len(sum)):
     for k in range(sum[i]):

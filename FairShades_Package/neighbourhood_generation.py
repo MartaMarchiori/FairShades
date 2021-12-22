@@ -25,7 +25,7 @@ class Neighbourhood(object):
   def generate_neighbourhood(self, capacity, test, sample, isGlobal=False):
     self.capacity = capacity
     self.test = test
-    self.sample = sample
+    self.sample = sample #is lowered in FairShades
     self.isGlobal = isGlobal
     method_name=capacity
     method=getattr(self,method_name,lambda :'Invalid')

@@ -31,7 +31,7 @@ def toDataFrame(classified_neigh):
   probas=[]
   for item in classified_neigh:
     text.append(item[0])
-    probas.append(item[1][1]) # appending only Hateful confidence
+    probas.append(item[1][1]) # appending only Abusive prob. 
   return text,probas
 
 # https://medium.com/analytics-vidhya/pre-processing-tweets-for-sentiment-analysis-a74deda9993e
