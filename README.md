@@ -9,6 +9,8 @@ This project is the continuation of a master's thesis project supervised and dev
 
 > Marta Marchiori Manerba and Riccardo Guidotti. "FairShades: Fairness Auditing via Explainability in Abusive Language Detection Systems". 2021 IEEE Second International Conference on Cognitive Machine Intelligence ([CogMI](http://www.sis.pitt.edu/lersais/conference/cogmi/2021/)). IEEE, 2021.
 
+Bibtex for citations:
+
 ```
 @inproceedings{manerba2021fairshades,
   title={FairShades: Fairness Auditing via Explainability in Abusive Language Detection Systems},
