@@ -8,3 +8,14 @@ We conduct several experiments on BERT-based models to demonstrate our proposal'
 This project is the continuation of a master's thesis project supervised and developed with Riccardo Guidotti.
 
 > Marta Marchiori Manerba and Riccardo Guidotti. "FairShades: Fairness Auditing via Explainability in Abusive Language Detection Systems". 2021 IEEE Second International Conference on Cognitive Machine Intelligence ([CogMI](http://www.sis.pitt.edu/lersais/conference/cogmi/2021/)). IEEE, 2021.
+
+```
+@inproceedings{manerba2021fairshades,
+  title={FairShades: Fairness Auditing via Explainability in Abusive Language Detection Systems},
+  author={Manerba, Marta Marchiori and Guidotti, Riccardo},
+  booktitle={2021 IEEE Third International Conference on Cognitive Machine Intelligence (CogMI)},
+  pages={34--43},
+  year={2021},
+  organization={IEEE}
+}
+```
